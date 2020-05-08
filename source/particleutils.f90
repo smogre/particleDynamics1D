@@ -11,6 +11,9 @@ MODULE PARTICLEUTILS
     ! total number of particle types depends on system to be simulated
     INTEGER :: PTYPE
 
+    ! particle radius
+    DOUBLE PRECISION :: PRAD
+
     ! current particle position
     DOUBLE PRECISION, POINTER :: POS
 
@@ -34,7 +37,6 @@ MODULE PARTICLEUTILS
     ! number of fusion events
     INTEGER :: NFUSE
 
-    !MOVE KFUSE AND PFUSE TO MAIN PROGRAM BODY?
     ! rate of fusion
     DOUBLE PRECISION, POINTER :: KFUSE(:)
 
@@ -91,69 +93,72 @@ MODULE PARTICLEUTILS
     ! location of special regions
     DOUBLE PRECISION, POINTER :: REGPOS(:)
 
+    ! arrays have been allocated
+    LOGICAL :: ARRAYSET = .FALSE.
+
   END TYPE DOMAIN
 
 
 CONTAINS
 
-  SUBROUTINE OUTPUTSNAPSHOT(PARTP,FILENAME,INFO,APPEND)
+  SUBROUTINE OUTPUTSNAPSHOT
   ! Output a snapshot of current particle configuration
-  ! ------------------
-  ! input parameters:
-  ! PARTP: object describing group of particles
-  ! FILENAME: output file
-  ! INFO: additional informational float (eg: time)
-  ! APPEND: append to file or rewrite?
-  ! -------------
-  ! output format:
-  ! 1st line -> number of particles.
-  ! Successive lines -> one line per particle
-  ! for each particle, lists INDEX, 3 coordinates of position,
-  ! followed by orientation in matrix form (x axis, y axis, z axis of particle frame)
-    USE KEYS, ONLY : NSTEPS,NTRIALS,NPART,NMT,SNAPEVERY
-    IMPLICIT NONE
+    ! ------------------
+    ! input parameters:
+    ! PARTP: object describing group of particles
+    ! FILENAME: output file
+    ! INFO: additional informational float (eg: time)
+    ! APPEND: append to file or rewrite?
+    ! -------------
+    ! output format:
+    ! 1st line -> number of particles.
+    ! Successive lines -> one line per particle
+    ! for each particle, lists INDEX, 3 coordinates of position,
+    ! followed by orientation in matrix form (x axis, y axis, z axis of particle frame)
+    !   USE KEYS, ONLY : NSTEPS,NTRIALS,NPART,NMT,SNAPEVERY
+    !   IMPLICIT NONE
 
-    TYPE(PARTICLEGROUP), POINTER :: PARTP
-    CHARACTER(LEN=*), INTENT(IN) :: FILENAME
-    DOUBLE PRECISION, INTENT(IN) :: INFO(:)
-    LOGICAL, INTENT(IN) :: APPEND
+    !   TYPE(PARTICLEGROUP), POINTER :: PARTP
+    !   CHARACTER(LEN=*), INTENT(IN) :: FILENAME
+    !   DOUBLE PRECISION, INTENT(IN) :: INFO(:)
+    !   LOGICAL, INTENT(IN) :: APPEND
 
-    INTEGER :: PC,MC,NINFO,NSAVE
-    CHARACTER(LEN=2) :: X1
-    CHARACTER(LEN=19) :: FMT1
+    !   INTEGER :: PC,MC,NINFO,NSAVE
+    !   CHARACTER(LEN=2) :: X1
+    !   CHARACTER(LEN=19) :: FMT1
 
-    IF (APPEND) THEN
-      OPEN(UNIT=99,FILE=FILENAME,STATUS='UNKNOWN',POSITION='APPEND')
-   ELSE
-      OPEN(UNIT=99,FILE=FILENAME,STATUS='UNKNOWN')
-   END IF
+    !   IF (APPEND) THEN
+    !     OPEN(UNIT=99,FILE=FILENAME,STATUS='UNKNOWN',POSITION='APPEND')
+    !  ELSE
+    !     OPEN(UNIT=99,FILE=FILENAME,STATUS='UNKNOWN')
+    !  END IF
 
-    NSAVE = 1+NSTEPS/SNAPEVERY
-    NINFO = SIZE(INFO)
-    WRITE (X1,'(I2)') NINFO
-    FMT1 = '(4I8,'//TRIM(X1)//'ES18.4E2)'
-    WRITE(99,FMT1) NTRIALS,NSAVE,NPART,NMT,INFO
+    !   NSAVE = 1+NSTEPS/SNAPEVERY
+    !   NINFO = SIZE(INFO)
+    !   WRITE (X1,'(I2)') NINFO
+    !   FMT1 = '(4I8,'//TRIM(X1)//'ES18.4E2)'
+    !   WRITE(99,FMT1) NTRIALS,NSAVE,NPART,NMT,INFO
 
-    ! DO MC = 1,PARTP%NMT
-    !   WRITE(99,'(I3,I3,3ES18.4E2)') MC, PARTP%MTSTATE(MC), PARTP%MTPOS(:,MC)
-    ! END DO
+    !   ! DO MC = 1,PARTP%NMT
+    !   !   WRITE(99,'(I3,I3,3ES18.4E2)') MC, PARTP%MTSTATE(MC), PARTP%MTPOS(:,MC)
+    !   ! END DO
 
-    ! DO PC = 1,PARTP%NPART
-    !   WRITE(99,'(I8,3ES18.4E2)') PC, PARTP%PARTPOS(:,PC)
-    ! END DO
+    !   ! DO PC = 1,PARTP%NPART
+    !   !   WRITE(99,'(I8,3ES18.4E2)') PC, PARTP%PARTPOS(:,PC)
+    !   ! END DO
 
-    CLOSE(99)
+    !   CLOSE(99)
 
   END SUBROUTINE OUTPUTSNAPSHOT
 
-  SUBROUTINE MAKEPARTICLE(PARTP,PTYPE,PARTID,NTYPE,NPROT,VEL,D,KREV,INITPOS,&
+  SUBROUTINE MAKEPARTICLE(PARTP,PARTID,PTYPE,NTYPE,NPROT,PRAD,VEL,D,KREV,INITPOS,&
                           INITSTATE,CANFUSE,KFUSE,PFUSE,INITPROT,PROTCONV,CURREG)
-  ! make a new particle and assign appropriate parameters
+  ! make a new particle and assign parameters
     IMPLICIT NONE
 
     TYPE(PARTICLE), POINTER :: PARTP
     INTEGER, INTENT(IN) :: PTYPE,NTYPE,NPROT,PARTID,INITSTATE
-    DOUBLE PRECISION, INTENT(IN) :: VEL,D,INITPOS,KREV
+    DOUBLE PRECISION, INTENT(IN) :: PRAD,VEL,D,INITPOS,KREV
     LOGICAL, INTENT(IN),OPTIONAL :: CANFUSE
     DOUBLE PRECISION,INTENT(IN), OPTIONAL:: KFUSE(NTYPE),PFUSE(NTYPE)
     DOUBLE PRECISION,INTENT(IN), OPTIONAL:: INITPROT(NPROT),PROTCONV(NPROT,NPROT)
@@ -164,15 +169,17 @@ CONTAINS
       STOP 1
     END IF
 
-    PARTP%PTYPE = PTYPE
     PARTP%ID = PARTID
+    PARTP%PTYPE = PTYPE
+    PARTP%PRAD = PRAD
+    
+    PARTP%POS = INITPOS
+    PARTP%CURSTATE = INITSTATE
 
     PARTP%VEL = VEL
     PARTP%D = D
+    
     PARTP%KREV = KREV
-
-    PARTP%POS = INITPOS
-    PARTP%CURSTATE = INITSTATE
 
     IF(PRESENT(CANFUSE)) THEN
       PARTP%CANFUSE = CANFUSE
@@ -220,11 +227,14 @@ CONTAINS
     IMPLICIT NONE
     TYPE(PARTICLE), POINTER :: PARTP
 
+    PARTP%ID = 0
     PARTP%PTYPE = 0
+    PARTP%PRAD = 0
     PARTP%POS = 0D0
     PARTP%CURSTATE = 0
     PARTP%VEL = 0D0
     PARTP%D = 0D0
+    PARTP%KREV = 0D0
 
     PARTP%CANFUSE = .FALSE.
     PARTP%NFUSE = 0
@@ -235,16 +245,14 @@ CONTAINS
     PARTP%ARRAYSET = .FALSE.
   END SUBROUTINE DELETEPARTICLE
 
-  SUBROUTINE SETUPPARTICLEGROUP(PGROUP,NPART,NTYPE,PLIST,KPROD,KSWITCH,INITPARTREG)
+  SUBROUTINE SETUPPARTICLEGROUP(PGROUP,NPART,NTYPE,PLIST,INITPARTREG)
   ! set up a cluster of particles
     USE KEYS, ONLY: MAXNPART
     IMPLICIT NONE
     TYPE(PARTICLEGROUP), POINTER :: PGROUP
     TYPE(PARTICLE), TARGET :: PLIST(NPART)
     INTEGER, INTENT(IN) :: NPART,NTYPE
-    DOUBLE PRECISION, INTENT(IN) :: KPROD(NTYPE), KSWITCH(NTYPE)
     INTEGER, INTENT(IN), OPTIONAL :: INITPARTREG
-    INTEGER :: PC
 
     IF(PGROUP%ARRAYSET) THEN
       PRINT*, 'ERROR IN SETUPPARTICLEGROUP: trying to overwrite'
@@ -256,8 +264,53 @@ CONTAINS
     PGROUP%PLIST => PLIST
     PGROUP%MAXNPART = MAXNPART
     PGROUP%NTYPE = NTYPE
-  
+    IF(PRESENT(INITPARTREG)) THEN
+      PGROUP%NPARTREG = INITPARTREG
+    ELSE
+      PGROUP%NPARTREG = 0
+    END IF
+    
+    PGROUP%ARRAYSET = .TRUE.
   END SUBROUTINE SETUPPARTICLEGROUP
 
+  SUBROUTINE CLEANUPPARTICLEGROUP(PGROUP)
+  ! clean up particlegroup object and deallocate arrays
+    IMPLICIT NONE
+    TYPE(PARTICLEGROUP), POINTER :: PGROUP
+
+    PGROUP%NPART = 0
+    DEALLOCATE(PGROUP%PLIST)
+    PGROUP%NTYPE = 0
+    PGROUP%NPARTREG = 0
+    PGROUP%ARRAYSET = .FALSE.
+  END SUBROUTINE CLEANUPPARTICLEGROUP
+
+  SUBROUTINE SETUPDOMAIN(DOM,DOMLEN,NREG,REGPOS)
+  ! set up domain object
+    IMPLICIT NONE
+    TYPE(DOMAIN), POINTER :: DOM
+    DOUBLE PRECISION, INTENT(IN) :: DOMLEN
+    INTEGER, INTENT(IN) :: NREG
+    DOUBLE PRECISION, INTENT(IN) :: REGPOS(NREG)
+
+    DOM%DOMLEN = DOMLEN
+    DOM%NREG = NREG
+    ALLOCATE(DOM%REGPOS(NREG))
+    DOM%REGPOS = REGPOS
+
+    DOM%ARRAYSET = .TRUE.
+  END SUBROUTINE SETUPDOMAIN
+
+  SUBROUTINE CLEANUPDOMAIN(DOM)
+  ! clean up domain object and deallocate arrays
+    IMPLICIT NONE
+    TYPE(DOMAIN), POINTER :: DOM
+
+    DOM%DOMLEN = 0D0
+    DOM%NREG = 0
+    DEALLOCATE(DOM%REGPOS)
+
+    DOM%ARRAYSET = .FALSE.
+  END SUBROUTINE CLEANUPDOMAIN
 
 END MODULE PARTICLEUTILS
