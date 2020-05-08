@@ -4,6 +4,9 @@ MODULE PARTICLEUTILS
   TYPE PARTICLE
   ! object containing information about individual particles
 
+    ! Particle ID
+    INTEGER :: ID
+
     ! type of particle
     ! total number of particle types depends on system to be simulated
     INTEGER :: PTYPE
@@ -19,20 +22,24 @@ MODULE PARTICLEUTILS
     ! walk velocity
     DOUBLE PRECISION :: VEL
 
+    ! diffusion coefficient for diffusive particles
+    DOUBLE PRECISION :: D
+
+    ! rate of direction reversal
+    DOUBLE PRECISION :: KREV
+
     ! can the particle fuse?
     LOGICAL :: CANFUSE
 
-
-    !MOVE KFUSE AND PFUSE TO MAIN PROGRAM BODY!
-    ! rate of fusion
-    DOUBLE PRECISION :: KFUSE
-
-    ! probability of fusion per contact
-    DOUBLE PRECISION :: PFUSE
-    
-
     ! number of fusion events
     INTEGER :: NFUSE
+
+    !MOVE KFUSE AND PFUSE TO MAIN PROGRAM BODY?
+    ! rate of fusion
+    DOUBLE PRECISION, POINTER :: KFUSE(:)
+
+    ! probability of fusion per contact
+    DOUBLE PRECISION,POINTER :: PFUSE(:)
 
     ! array of protein content
     ! contains amounts of different protein types
@@ -40,13 +47,6 @@ MODULE PARTICLEUTILS
 
     ! conversion rates between protein types
     DOUBLE PRECISION, POINTER :: PROTCONV(:,:)
-
-    ! Particle ID
-    INTEGER :: ID
-
-    ! starting position for the particle
-    ! represents where the particle is produced
-    DOUBLE PRECISION :: STARTPOS
 
     ! region in which particle resides
     INTEGER :: CURREG
@@ -59,7 +59,7 @@ MODULE PARTICLEUTILS
   TYPE PARTICLEGROUP
   ! object containing information about a group of mixed particle types
 
-    ! number of particles in the group
+    ! number of active particles in the group
     INTEGER :: NPART 
 
     ! maximum number of particles allowed
@@ -70,12 +70,6 @@ MODULE PARTICLEUTILS
 
     ! number of particle types
     INTEGER :: NTYPE
-
-    ! rates of production for each particle type
-    DOUBLE PRECISION, POINTER :: KPROD(:)
-
-    ! rates of direction reversal for each particle type
-    DOUBLE PRECISION, POINTER :: KSWITCH(:)
 
     ! number of particles in regions
     INTEGER :: NPARTREG
@@ -152,41 +146,118 @@ CONTAINS
 
   END SUBROUTINE OUTPUTSNAPSHOT
 
-  SUBROUTINE MAKEPARTICLE(PARTP,PTYPE,NPROT,VEL,INITPOS,INITPROT,INITSTATE,PARTID)
-  ! make a new particle
+  SUBROUTINE MAKEPARTICLE(PARTP,PTYPE,PARTID,NTYPE,NPROT,VEL,D,KREV,INITPOS,&
+                          INITSTATE,CANFUSE,KFUSE,PFUSE,INITPROT,PROTCONV,CURREG)
+  ! make a new particle and assign appropriate parameters
     IMPLICIT NONE
 
     TYPE(PARTICLE), POINTER :: PARTP
-    INTEGER, INTENT(IN) :: PTYPE,NPROT,PARTID,INITSTATE
-    DOUBLE PRECISION, INTENT(IN) :: VEL,INITPOS,INITPROT(:)
-    
+    INTEGER, INTENT(IN) :: PTYPE,NTYPE,NPROT,PARTID,INITSTATE
+    DOUBLE PRECISION, INTENT(IN) :: VEL,D,INITPOS,KREV
+    LOGICAL, INTENT(IN),OPTIONAL :: CANFUSE
+    DOUBLE PRECISION,INTENT(IN), OPTIONAL:: KFUSE(NTYPE),PFUSE(NTYPE)
+    DOUBLE PRECISION,INTENT(IN), OPTIONAL:: INITPROT(NPROT),PROTCONV(NPROT,NPROT)
+    INTEGER,INTENT(IN), OPTIONAL :: CURREG
+
     IF(PARTP%ARRAYSET) THEN
       PRINT*, 'ERROR IN MAKEPARTICLE: trying to overwrite particle'
       STOP 1
     END IF
 
     PARTP%PTYPE = PTYPE
-    ALLOCATE(PARTP%PROT(NPROT))
-
-    PARTP%ARRAYSET= .TRUE.
+    PARTP%ID = PARTID
 
     PARTP%VEL = VEL
+    PARTP%D = D
+    PARTP%KREV = KREV
+
     PARTP%POS = INITPOS
     PARTP%CURSTATE = INITSTATE
-    PARTP%ID = PARTID
-    PARTP%PROT = INITPROT
+
+    IF(PRESENT(CANFUSE)) THEN
+      PARTP%CANFUSE = CANFUSE
+    ELSE
+      PARTP%CANFUSE = .FALSE.
+    END IF
+    PARTP%NFUSE = 0
+
+    IF(PRESENT(KFUSE)) THEN
+      ALLOCATE(PARTP%KFUSE(NTYPE))
+      PARTP%KFUSE = KFUSE
+    END IF
+
+    IF(PRESENT(PFUSE)) THEN
+      ALLOCATE(PARTP%PFUSE(NTYPE))
+      PARTP%PFUSE = PFUSE
+    END IF
+
+    ALLOCATE(PARTP%PROT(NPROT))
+    IF(PRESENT(INITPROT)) THEN
+      PARTP%PROT = INITPROT
+    ELSE
+      PARTP%PROT = 0D0
+    END IF
+
+    ALLOCATE(PARTP%PROTCONV(NPROT,NPROT))
+    IF(PRESENT(PROTCONV)) THEN
+      PARTP%PROTCONV = PROTCONV
+    ELSE 
+      PARTP%PROTCONV = 0D0
+    END IF
+
+    IF(PRESENT(CURREG)) THEN
+      PARTP%CURREG = CURREG
+    ELSE
+      PARTP%CURREG = 0
+    END IF
+
+    PARTP%ARRAYSET= .TRUE.
 
   END SUBROUTINE MAKEPARTICLE
 
   SUBROUTINE DELETEPARTICLE(PARTP)
-    ! deallocate arrays
+  ! delete particle and deallocate arrays
     IMPLICIT NONE
     TYPE(PARTICLE), POINTER :: PARTP
 
-    DEALLOCATE(PARTP%PROT,PARTP%PROTCONV)
     PARTP%PTYPE = 0
+    PARTP%POS = 0D0
+    PARTP%CURSTATE = 0
     PARTP%VEL = 0D0
+    PARTP%D = 0D0
+
+    PARTP%CANFUSE = .FALSE.
+    PARTP%NFUSE = 0
+    DEALLOCATE(PARTP%KFUSE,PARTP%PFUSE)
+    DEALLOCATE(PARTP%PROT,PARTP%PROTCONV)
+    PARTP%CURREG = 0
+    
     PARTP%ARRAYSET = .FALSE.
   END SUBROUTINE DELETEPARTICLE
+
+  SUBROUTINE SETUPPARTICLEGROUP(PGROUP,NPART,NTYPE,PLIST,KPROD,KSWITCH,INITPARTREG)
+  ! set up a cluster of particles
+    USE KEYS, ONLY: MAXNPART
+    IMPLICIT NONE
+    TYPE(PARTICLEGROUP), POINTER :: PGROUP
+    TYPE(PARTICLE), TARGET :: PLIST(NPART)
+    INTEGER, INTENT(IN) :: NPART,NTYPE
+    DOUBLE PRECISION, INTENT(IN) :: KPROD(NTYPE), KSWITCH(NTYPE)
+    INTEGER, INTENT(IN), OPTIONAL :: INITPARTREG
+    INTEGER :: PC
+
+    IF(PGROUP%ARRAYSET) THEN
+      PRINT*, 'ERROR IN SETUPPARTICLEGROUP: trying to overwrite'
+      STOP 1
+    END IF
+
+    PGROUP%NPART = NPART
+    ALLOCATE(PGROUP%PLIST(NPART))
+    PGROUP%PLIST => PLIST
+    PGROUP%MAXNPART = MAXNPART
+    PGROUP%NTYPE = NTYPE
+  
+  END SUBROUTINE SETUPPARTICLEGROUP
+
 
 END MODULE PARTICLEUTILS

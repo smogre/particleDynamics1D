@@ -26,7 +26,7 @@ SUBROUTINE READKEY
   ! ------ for initializing random number generator
   INTEGER :: TIMEVAL(8), SEED
   ! ---------------- temporary variables ---------------
-  INTEGER :: I
+  INTEGER :: I,J
   CHARACTER*100 :: DUMSTR
   LOGICAL :: LDUM
 
@@ -44,31 +44,35 @@ SUBROUTINE READKEY
 
   ! particle properties
   NPART = 1 ! number of particles
+  NTYPE = 1 ! number of particle types
   VEL = 1D0 ! velocity of particles
-  KREV = 1D0 ! reversal rate (per second)
-  KJUMP = 1D0 ! jump rate (per second)
-  KBIND = 1D0 ! bind rate (per second)
-  CRAD = 0.25D0 ! capture radius (microns)
-  D = 0.015 ! diffusion coefficient
+  PRAD = 1D-2 ! particle radius (different radii can be assigned to different particles)
+  BUFLEN = 0D0 ! buffer length to determine contact
+  KREV = 1D0 ! rate of direction reversal
+  KSTOP = 0D0 ! rate of stopping
+  D = 0D0 ! diffusion coefficient
+  STARTPOS = 0D0 ! starting position
+  STARTPROT = -1D0 ! amount of protein to start with
 
-  ! microtubule properties
-  NMT = 5 ! number of microtubules
-  MTDYN = .FALSE.
-  VGMT = 1D0 !0.172um/s
-  VSMT = -1D0 !0.635um/s
-  KRMT = 1D0 !0.008/s
-  KCMT = 1D0 !0.044/s
+  ! fusion details
+  KFUSE = 0D0 ! matrix of fusion rates
+  PFUSE = 0D0 ! matrix of fusion probabilities
+  DOFUSION = .FALSE.
+  USEPFUSE = .FALSE.
 
   ! domain info
-  DOMRAD = 1D0 ! domain radius (micron)
-  DOMLEN = 20D0 ! domain length (micron)
+  DOMLEN = 1D0 ! domain length
+  NREG = 0 ! number of regions
+  REGPOS = 0D0 ! region positions
+
 
   ! input/output  
   SNAPFILE = '*.snap.out' ! snapshot file
-  DUMPSNAPSHOTS = .FALSE. ! periodically dump chain snapshots
+  OUTFILE = '*.out' ! output file
+  DUMPSNAPSHOTS = .FALSE. ! periodically dump snapshots
   APPENDSNAPSHOTS = .FALSE. ! append snapshots to file rather than replacing
   SNAPEVERY = 1 ! how often to dump snapshots
-  
+  OUTEVERY = 1 ! how often to write to output file
   
   ! dynamics
   DELT = 1D-4 ! time step
@@ -128,36 +132,66 @@ SUBROUTINE READKEY
       SELECT CASE(WORD) ! pick which keyword
         CASE('ACTION')
           CALL READA(ACTION, CASESET=1)
+        CASE('BUFLEN')
+          CALL READF(BUFLEN)
         CASE('D')
-          CALL READF(D)
-        CASE('DOMRAD')
-          CALL READF(DOMRAD)
+          CALL READF(D(1))
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(D(I))
+          END DO
         CASE('DOMLEN')
           CALL READF(DOMLEN)
         CASE('DELT')
           CALL READF(DELT)
-        CASE('KBIND')
-          CALL READF(KBIND)
-        CASE('KCMT')
-          CALL READF(KCMT)
-        CASE('KJUMP')
-          CALL READF(KJUMP)
+        CASE('DOFUSION')
+          CALL READO(DOFUSION)
+        CASE('KFUSE')
+          CALL READI(I)
+          DO J = 1,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(KFUSE(I,J))
+          END DO
         CASE('KREV')
-          CALL READF(KREV)
-        CASE('KRMT')
-          CALL READF(KRMT)
-        CASE('MTDYN')
-          MTDYN = .TRUE.
-        CASE('NMT')
-          CALL READI(NMT)
+          CALL READF(KREV(1))
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(KREV(I))
+          END DO
+        CASE('KSTOP')
+          CALL READF(KSTOP(1))
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(KSTOP(I))
+          END DO
         CASE('NPART')
-          CALL READI(NPART)
+          CALL READI(NPART(1))
+          NPART = NPART(1)
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READI(NPART(I))
+          END DO
+        CASE('NREG')
+          CALL READI(NREG)
         CASE('NSTEPS')
           CALL READI(NSTEPS)
         CASE('NTRIALS')
           CALL READI(NTRIALS)
+        CASE('NTYPE')
+          CALL READI(NTYPE)
+        CASE('PFUSE')
+          CALL READI(I)
+          DO J = 1,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(PFUSE(I,J))
+          END DO
         CASE('PRINTEVERY')
-          CALL READI(PRINTEVERY)   
+          CALL READI(PRINTEVERY)
+        CASE('PRAD')   
+          CALL READF(PRAD(1))
+          PRAD = PRAD(1)
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(PRAD(I))
+          END DO
+        CASE('REGPOS')
+          CALL READF(REGPOS(1))
+          DO I = 2,MIN(MAXNREG,NITEMS-1)
+            CALL READF(REGPOS(I))
+          END DO
         CASE('RNGSEED')
           CALL READI(RNGSEED)
         CASE('SNAPFILE')
@@ -167,14 +201,26 @@ SUBROUTINE READKEY
           IF (NITEMS.GT.1) CALL READI(SNAPEVERY)
           IF (NITEMS.GT.2) CALL READA(SNAPFILE)
           IF (NITEMS.GT.3) CALL READO(APPENDSNAPSHOTS)
+        CASE('STARTPOS')
+          CALL READF(STARTPOS(1))
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(STARTPOS(I))
+          END DO
+        CASE('STARTPROT')
+          CALL READF(STARTPROT(1))
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(STARTPROT(I))
+          END DO
+        CASE('USEPFUSE')
+          CALL READO(USEPFUSE)
         CASE('VEL')
-          CALL READF(VEL)
+          CALL READF(VEL(1))
+          VEL = VEL(1)
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(VEL(I))
+          END DO
         CASE('VERBOSE')
           CALL READO(VERBOSE)
-        CASE('VGMT')
-          CALL READF(VGMT)
-        CASE('VSMT')
-          CALL READF(VSMT)
         CASE DEFAULT
           print*, 'ERROR: unidentified keyword ', TRIM(WORD), " Will ignore."
       END SELECT
@@ -217,12 +263,9 @@ SUBROUTINE READKEY
     PRINT*, 'Dumping snapshot every', SNAPEVERY,'steps. In file:', TRIM(ADJUSTL(SNAPFILE))
   ENDIF
   
-  print*, 'number of particles:', NPART
-  print*, 'number of microtubules:', NMT
-  print*, 'vel, kjump, krev:', VEL,KJUMP,KREV
-      
-  IF(DOMRAD.GT.0D0) PRINT*, 'domain radius: ',DOMRAD
-  
+  print*, 'number of particle types:', NTYPE
+  print*, 'velocities:', VEL
+
   IF(DOMLEN.GT.0D0) PRINT*, 'domain length: ',DOMLEN
   
   PRINT*, '----------------------------------------------------'

@@ -17,34 +17,55 @@ MODULE KEYS
   ! ----------------------------------------------------------------------------
   ! particle properties
   ! ----------------------------------------------------------------------------
-  INTEGER :: NPART
-  DOUBLE PRECISION :: VEL
-  DOUBLE PRECISION :: KREV
-  DOUBLE PRECISION :: KJUMP
-  DOUBLE PRECISION :: CRAD
-  DOUBLE PRECISION :: D
-  DOUBLE PRECISION :: KBIND
+  INTEGER, PARAMETER :: MAXNPART = 1000 ! maximum number of particles allowed
+  INTEGER, PARAMETER :: MAXNTYPE = 2 ! maximum number of particle types
+
+  INTEGER :: NTYPE ! number of particle types
+  INTEGER :: NPART(MAXNTYPE) ! number of active particles in a group
+  DOUBLE PRECISION :: VEL(MAXNTYPE) ! velocity of each particle type
+  DOUBLE PRECISION :: PRAD(MAXNTYPE) ! radius of each particle type
+  DOUBLE PRECISION :: BUFLEN ! buffer length to determine contact
+
+  DOUBLE PRECISION :: KREV(MAXNTYPE) ! direction reversal rates for particle types
+  DOUBLE PRECISION :: KSTOP(MAXNTYPE) ! stopping rates for particles
+  DOUBLE PRECISION :: D(MAXNTYPE) ! diffusion coefficient for diffusive particles
 
   ! ----------------------------------------------------------------------------
-  ! microtubule properties
+  ! protein dynamics
   ! ----------------------------------------------------------------------------
-  INTEGER :: NMT
-  LOGICAL :: MTDYN
-  DOUBLE PRECISION :: VGMT,VSMT !growth and shrink velocity
-  DOUBLE PRECISION :: KRMT,KCMT !rescue and catastrophe rate
-  
+  INTEGER, PARAMETER :: MAXNPROT = 2 ! maximum number of protein types
+  INTEGER :: NPROT(MAXNTYPE) ! number of protein types in each particle type
+  DOUBLE PRECISION :: PROTCONV(MAXNPROT,MAXNPROT) ! conversion rate between proteins
+
+  ! ----------------------------------------------------------------------------
+  ! fusion parameters
+  ! ----------------------------------------------------------------------------
+  DOUBLE PRECISION :: KFUSE(MAXNTYPE,MAXNTYPE) !matrix for fusion rates between particle types
+  DOUBLE PRECISION :: PFUSE(MAXNTYPE,MAXNTYPE) !matrix for fusion probabilities
+  LOGICAL :: DOFUSION ! implement fusion?
+  LOGICAL :: USEPFUSE ! use constant fusion probability?
+
+  ! ----------------------------------------------------------------------------
+  ! particle production
+  ! ----------------------------------------------------------------------------
+  DOUBLE PRECISION :: KPROD(MAXNTYPE) ! rate of production
+  DOUBLE PRECISION :: STARTPOS(MAXNTYPE) ! starting position
+  DOUBLE PRECISION :: STARTPROT(MAXNTYPE) ! amount of protein to start with
+ 
   ! ----------------------------------------------------------------------------
   ! domain info
   ! ----------------------------------------------------------------------------
-  DOUBLE PRECISION :: DOMRAD
-  DOUBLE PRECISION :: DOMLEN
+  DOUBLE PRECISION :: DOMLEN ! length of domain
+  INTEGER :: NREG ! number of regions
+  INTEGER, PARAMETER :: MAXNREG = 100 ! maximum number of regions allowed
+  DOUBLE PRECISION :: REGPOS(MAXNREG) ! positions of regions
   
   ! ----------------------------------------------------------------------------
   ! input/output
   ! ----------------------------------------------------------------------------
-  CHARACTER*100 :: SNAPFILE
+  CHARACTER*100 :: SNAPFILE, OUTFILE
   LOGICAL :: DUMPSNAPSHOTS, APPENDSNAPSHOTS
-  INTEGER :: SNAPEVERY
+  INTEGER :: SNAPEVERY, OUTEVERY
   
   ! ----------------------------------------------------------------------------
   ! dynamics
