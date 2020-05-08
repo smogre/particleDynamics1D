@@ -48,17 +48,25 @@ SUBROUTINE READKEY
   VEL = 1D0 ! velocity of particles
   PRAD = 1D-2 ! particle radius (different radii can be assigned to different particles)
   BUFLEN = 0D0 ! buffer length to determine contact
+
   KREV = 1D0 ! rate of direction reversal
   KSTOP = 0D0 ! rate of stopping
   D = 0D0 ! diffusion coefficient
-  STARTPOS = 0D0 ! starting position
-  STARTPROT = -1D0 ! amount of protein to start with
+
+  ! protein dynamics
+  NPROT = 1
+  PROTCONV = 0
 
   ! fusion details
   KFUSE = 0D0 ! matrix of fusion rates
   PFUSE = 0D0 ! matrix of fusion probabilities
   DOFUSION = .FALSE.
   USEPFUSE = .FALSE.
+
+  ! particle production
+  KPROD = 0D0
+  STARTPOS = 0D0 ! starting position
+  STARTPROT = -1D0 ! amount of protein to start with
 
   ! domain info
   DOMLEN = 1D0 ! domain length
@@ -166,6 +174,8 @@ SUBROUTINE READKEY
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READI(NPART(I))
           END DO
+        CASE('NPROT')
+          CALL READI(NPROT)
         CASE('NREG')
           CALL READI(NREG)
         CASE('NSTEPS')
@@ -186,6 +196,11 @@ SUBROUTINE READKEY
           PRAD = PRAD(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(PRAD(I))
+          END DO
+        CASE('PROTCONV')
+          CALL READI(I)
+          DO J = 1,MIN(MAXNPROT,NITEMS-1)
+            CALL READF(PROTCONV(I,J))
           END DO
         CASE('REGPOS')
           CALL READF(REGPOS(1))

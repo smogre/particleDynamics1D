@@ -34,7 +34,7 @@ MODULE KEYS
   ! protein dynamics
   ! ----------------------------------------------------------------------------
   INTEGER, PARAMETER :: MAXNPROT = 2 ! maximum number of protein types
-  INTEGER :: NPROT(MAXNTYPE) ! number of protein types in each particle type
+  INTEGER :: NPROT ! number of protein types 
   DOUBLE PRECISION :: PROTCONV(MAXNPROT,MAXNPROT) ! conversion rate between proteins
 
   ! ----------------------------------------------------------------------------
