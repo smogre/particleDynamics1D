@@ -7,8 +7,8 @@ OSGFLAGS = -static
 OSGLIBS =  -lblas -llapack -lgfortran -lm
 
 # executable name
-EXE = ../transportsimMT.exe
-OSGEXE=../transportsimMT_osg.exe
+EXE = ../partdynamics1D.exe
+OSGEXE=../partdynamics1D_osg.exe
 TESTEXE = ../testrun.exe
 
 .SUFFIXES: .o .f90 
@@ -42,5 +42,6 @@ veryclean: clean
 # ------------
 readkey.o: inputparams.o keys.o genutil.o
 genutil.o: mt19937.o 
-transportutil.o: keys.o mt19937.o particleutil.o
-particleutil.o: keys.o genutil.o mt19937.o
+partdynamics.o: keys.o mt19937.o particleutils.o fusionutils.o
+fusionutils.o: keys.o mt19937.o particleutils.o
+particleutils.o: keys.o genutil.o mt19937.o

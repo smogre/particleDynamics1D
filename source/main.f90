@@ -1,7 +1,9 @@
 PROGRAM MAIN
-  USE KEYS
+  USE KEYS, ONLY: ACTION,NTRIALS,DOMLEN,NREG,REGPOS,NTYPE,NPART,NPROT,PRAD,VEL,&
+                  D,KREV,STARTPOS,STARTSTATE
   USE PARTICLEUTILS, ONLY: PARTICLE,PARTICLEGROUP,DOMAIN,&
-                            MAKEPARTICLE,DELETEPARTICLE,SETUPPARTICLEGROUP
+                            MAKEPARTICLE,DELETEPARTICLE,SETUPPARTICLEGROUP,&
+                            CLEANUPPARTICLEGROUP,SETUPDOMAIN,CLEANUPDOMAIN
 
   IMPLICIT NONE
   DOUBLE PRECISION :: T1,T2
@@ -17,11 +19,14 @@ PROGRAM MAIN
   ! start timer
   CALL CPU_TIME(T1)
 
-  !parses free format input file
+  ! parses free format input file
   CALL READKEY
 
-  !initialize particle arrays
+  ! initialize particle arrays
   ALLOCATE(GROUPLIST(NTRIALS))
+
+  ! set up simulation domain
+  CALL SETUPDOMAIN(DOM,DOMLEN,NREG,REGPOS)
 
   SELECT CASE(ACTION)
     CASE('DOFUSION')
@@ -35,8 +40,11 @@ PROGRAM MAIN
             PARTP=>PLIST(PID)
           END DO
         END DO
-
         CALL SETUPPARTICLEGROUP(PGROUP,SUM(NPART),NTYPE,PLIST)
+        
+        !insert code to run requested action
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
       END DO
     CASE DEFAULT
     PRINT*, 'ERROR IN MAIN: unidentified action', ACTION
@@ -48,6 +56,7 @@ PROGRAM MAIN
     PGROUP=>GROUPLIST(TC)
     CALL CLEANUPPARTICLEGROUP(PGROUP)
   END DO
+  CALL CLEANUPDOMAIN(DOM)
   DEALLOCATE(GROUPLIST)
   DEALLOCATE(PLIST)
 

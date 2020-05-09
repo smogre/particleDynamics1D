@@ -18,3 +18,4 @@
 *.ini
 *.exe
 *.condor
+source/.vscode/
