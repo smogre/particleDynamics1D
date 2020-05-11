@@ -43,6 +43,9 @@ PRAD 0.1D0
 # particle diffusion coefficients
 D 0D0
 
+# production rate
+KPROD 1D3 0D0
+
 
 ##############################################
 # protein information
@@ -55,7 +58,7 @@ NPROT 2
 # format: i kij
 # where i is the particle type, kij is the initial content of protein j in i
 STARTPROT 1 0D0 0D0
-STARTPROT 2 1D0 0D0
+STARTPROT 2 0D0 0D0
 
 # protein conversion rates
 # format: i kij

@@ -17,7 +17,7 @@ MODULE KEYS
   ! ----------------------------------------------------------------------------
   ! particle properties
   ! ----------------------------------------------------------------------------
-  INTEGER, PARAMETER :: MAXNPART = 1000 ! maximum number of particles allowed
+  INTEGER, PARAMETER :: MAXNPART = 100 ! maximum number of particles allowed
   INTEGER, PARAMETER :: MAXNTYPE = 2 ! maximum number of particle types
 
   INTEGER :: NTYPE ! number of particle types

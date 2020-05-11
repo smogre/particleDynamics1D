@@ -161,6 +161,10 @@ SUBROUTINE READKEY
           DO J = 1,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(KFUSE(I,J))
           END DO
+        CASE('KPROD')
+          DO I = 1,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(KPROD(I))
+          END DO
         CASE('KREV')
           CALL READF(KREV(1))
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
