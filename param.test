@@ -1,0 +1,114 @@
+# parameter file for simulating 1D particle dynamics
+
+# what action to perform
+ACTION DOFUSION
+
+# number of steps
+NSTEPS 5
+
+# number of trials
+NTRIALS 1
+
+##############################################
+# particle information
+##############################################
+
+# number of particle types
+# (1 = lysosome, 2 = autophagosome)
+NTYPE 2
+
+# initial number of particles of each type
+NPART 1 1
+
+# starting position for particle types
+# negative values => start uniformly in domain
+STARTPOS 0D0 1D0
+
+# initial state of particles
+STARTSTATE 1 -1
+
+# reversal rate
+KREV 0D0 0D0
+
+# stopping rate
+# KSTOP 0D0 0D0
+
+# particle radii
+# can add more values if each particle type has a different radius
+PRAD 0.1D0
+
+# particle velocities
+# VEL 4D0 1D0
+
+# particle diffusion coefficients
+D 0D0
+
+
+##############################################
+# protein information
+##############################################
+# number of protein types
+# default 2: non-degraded, degraded
+NPROT 2
+
+# initial protein content
+# format: i kij
+# where i is the particle type, kij is the initial content of protein j in i
+STARTPROT 1 0D0 0D0
+STARTPROT 2 1D0 0D0
+
+# protein conversion rates
+# format: i kij
+# where i is the protein type, kij is the rate of conversion of prot i to j
+PROTCONV 1 0D0 1D0
+PROTCONV 2 0D0 0D0
+
+##############################################
+# fusion parameters
+##############################################
+DOFUSION T
+
+# buffer length to determine touch
+BUFLEN 0D0
+
+# use constant probability per touch
+USEPFUSE T
+
+# fusion probability
+# format: i pij
+# where i is the particle type, pij is the probability of fusion between i and j
+PFUSE 1 0D0 5D-1
+PFUSE 2 5D-1 0D0
+
+# fusion rates
+# matrix of fusion rates between particle types
+# format: i kij
+# where i is the particle type, kij is the fusion rate between particle i and j
+# uncomment following lines to use rate instead of probability
+# KFUSE 1 0D0 1D0
+# KFUSE 2 1D0 0D0
+
+##############################################
+# domain information
+##############################################
+# domain length
+DOMLEN 1D0
+
+# number of regions
+NREG 0
+
+# region positions
+# negative value distributes regions uniformly
+REGPOS -1D0
+
+##############################################
+# simulation info
+##############################################
+# time step
+DELT 1D-2
+# where to save output file
+OUTFILE 10 /data/SimData/particledynamics1D/outfiles/*.out
+# where to save snapshots
+SNAPSHOTS 1 /data/SimData/particledynamics1D/snapfiles/*.snap.out
+# print status to console
+PRINTEVERY 1D3

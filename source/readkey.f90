@@ -65,8 +65,9 @@ SUBROUTINE READKEY
 
   ! particle production
   KPROD = 0D0
-  STARTPOS = 0D0 ! starting position
-  STARTPROT = -1D0 ! amount of protein to start with
+  STARTPOS = -1D0 ! starting position
+  STARTPROT = 0D0 ! amount of protein to start with
+  STARTSTATE = 0
 
   ! domain info
   DOMLEN = 1D0 ! domain length
@@ -79,8 +80,8 @@ SUBROUTINE READKEY
   OUTFILE = '*.out' ! output file
   DUMPSNAPSHOTS = .FALSE. ! periodically dump snapshots
   APPENDSNAPSHOTS = .FALSE. ! append snapshots to file rather than replacing
-  SNAPEVERY = 1 ! how often to dump snapshots
-  OUTEVERY = 1 ! how often to write to output file
+  SNAPEVERY = 0 ! how often to dump snapshots
+  OUTEVERY = 0 ! how often to write to output file
   
   ! dynamics
   DELT = 1D-4 ! time step
@@ -144,6 +145,7 @@ SUBROUTINE READKEY
           CALL READF(BUFLEN)
         CASE('D')
           CALL READF(D(1))
+          D = D(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(D(I))
           END DO
@@ -154,6 +156,7 @@ SUBROUTINE READKEY
         CASE('DOFUSION')
           CALL READO(DOFUSION)
         CASE('KFUSE')
+          USEPFUSE = .FALSE.
           CALL READI(I)
           DO J = 1,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(KFUSE(I,J))
@@ -184,6 +187,13 @@ SUBROUTINE READKEY
           CALL READI(NTRIALS)
         CASE('NTYPE')
           CALL READI(NTYPE)
+          IF(NTYPE.GT.MAXNTYPE) THEN
+            PRINT*, 'Maximum number of particle types allowed is ',MAXNTYPE
+            NTYPE = MAXNTYPE
+          END IF
+        CASE('OUTFILE')
+          IF (NITEMS.GT.1) CALL READI(OUTEVERY)
+          IF (NITEMS.GT.2) CALL READA(OUTFILE)
         CASE('PFUSE')
           CALL READI(I)
           DO J = 1,MIN(MAXNTYPE,NITEMS-1)
@@ -204,6 +214,7 @@ SUBROUTINE READKEY
           END DO
         CASE('REGPOS')
           CALL READF(REGPOS(1))
+          REGPOS = REGPOS(1)
           DO I = 2,MIN(MAXNREG,NITEMS-1)
             CALL READF(REGPOS(I))
           END DO
@@ -222,9 +233,9 @@ SUBROUTINE READKEY
             CALL READF(STARTPOS(I))
           END DO
         CASE('STARTPROT')
-          CALL READF(STARTPROT(1))
-          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
-            CALL READF(STARTPROT(I))
+          CALL READI(I)
+          DO J = 1,MIN(MAXNPROT,NITEMS-1)
+            CALL READF(STARTPROT(I,J))
           END DO
         CASE('STARTSTATE')
           CALL READI(STARTSTATE(1))

@@ -51,7 +51,7 @@ MODULE KEYS
   ! ----------------------------------------------------------------------------
   DOUBLE PRECISION :: KPROD(MAXNTYPE) ! rate of production
   DOUBLE PRECISION :: STARTPOS(MAXNTYPE) ! starting position
-  DOUBLE PRECISION :: STARTPROT(MAXNTYPE) ! amount of protein to start with
+  DOUBLE PRECISION :: STARTPROT(MAXNTYPE,MAXNPROT) ! amount of protein to start with
  
   ! ----------------------------------------------------------------------------
   ! domain info

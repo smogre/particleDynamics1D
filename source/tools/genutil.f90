@@ -6,7 +6,42 @@ MODULE GENUTIL
   DOUBLE PRECISION, PARAMETER :: PI = 3.141592653589793D0
   
 CONTAINS  
+  FUNCTION ONES(N)
+	!generates an array of ones of size N
+    INTEGER, INTENT(IN) :: N
+    DOUBLE PRECISION :: ONES(N)
+    ONES = 1D0
+  END FUNCTION ONES
+	
+  FUNCTION LINSPACE(XMIN,XMAX,N)
+	!generates linearly spaced values
+    IMPLICIT NONE
+    DOUBLE PRECISION :: XMIN,XMAX
+    INTEGER :: N,I
+    DOUBLE PRECISION :: LINSPACE(N)
+    IF(N.EQ.1) THEN
+      LINSPACE = XMIN
+    ELSE
+      DO I = 1,N
+        LINSPACE(I) = XMIN + (XMAX-XMIN)*(I-1)/(N-1)
+      END DO
+    END IF
+  END FUNCTION LINSPACE
 
+  FUNCTION LOGSPACE(XMIN,XMAX,N)
+	!GENERATES LOGARITHMICALLY SPACED VALUES
+    DOUBLE PRECISION :: XMIN,XMAX
+    INTEGER :: N,I
+    DOUBLE PRECISION :: LOGSPACE(N)
+    IF(N.EQ.1) THEN
+      LOGSPACE = XMIN
+    ELSE
+      DO I = 1,N
+        LOGSPACE(I) = XMIN*(XMAX/XMIN)**(DBLE(I-1)/(N-1))
+      END DO
+    END IF
+  END FUNCTION LOGSPACE
+  
   INTEGER FUNCTION STRING2NUM(STRINGIN,APPENDNUM)
     ! convert the string to a unique number based on ascii characters
     ! the characters SPACE, {,},(,),[,],",`,<,> and all nonprintable characters are ignored
