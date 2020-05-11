@@ -1,4 +1,6 @@
-OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o partdynamics.o fusionutils.o
+#OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o partdynamics.o fusionutils.o
+OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o 
+
 FC = gfortran
 FLAGS = -O3 
 DEBUGFLAGS = -g -fbacktrace -ffpe-trap=zero,overflow,underflow,invalid -fcheck=all -Wno-tabs

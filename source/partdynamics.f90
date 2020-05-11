@@ -13,7 +13,7 @@ CONTAINS
   SUBROUTINE TRANSPORTSIM(PGROUP,DOMP,DOFUSION)
   !simulates the transport of phagosomes and lysosomes in a 1D domain
     USE KEYS, ONLY: PRINTEVERY,SNAPEVERY,OUTEVERY,NSTEPS,DELT,SNAPFILE,&
-                    KPROD,PRAD,VEL,D,KREV,STARTPOS,STARTSTATE,OUTFILE,&
+                    KPROD,PRAD,KREV,STARTPOS,STARTSTATE,OUTFILE,&
                     USEPFUSE,PFUSE,KFUSE
     USE PARTICLEUTILS, ONLY: PARTICLEGROUP,PARTICLE,DOMAIN,OUTPUTSNAPSHOT,&
                             MAKEPARTICLE
@@ -77,38 +77,29 @@ CONTAINS
 
       END DO
 
-      ! particle production
-      IF(PGROUP%NPART.LT.PGROUP%MAXNPART) THEN
-        DO NC = 1,PGROUP%NTYPE
+      ! particle production      
+        DO NC = 1,PGROUP%NTYPE ! go through each type of particle
           ADDPART = .FALSE.
           ! check if particle is produced
           IF(GRND().LE.(1-EXP(-KPROD(NC)*DELT))) THEN
             ! PRINT*, 'TESTX: ADDING PARTICLE'
             PID = PGROUP%LASTID+1
-            ! check if particle can be added to existing list
-            DO PC = 1,PGROUP%NPART
-              IF(PLIST(PC)%ID.EQ.0) THEN
-                PARTP=>PLIST(PC)
-                CALL MAKEPARTICLE(PARTP,PID,NC,PGROUP%NTYPE,PGROUP%NPROT,&
+
+            ! check you have space for a new particle
+            IF (PGROUP%NPART.EQ.PGROUP%MAXNPART) THEN
+               PRINT*, 'ERROR: too many particles added.', PGROUP%NPART, PGROUP%MAXNPART
+               STOP 1
+            ENDIF
+
+            PARTP=>PLIST(PGROUP%NPART+1)
+            CALL MAKEPARTICLE(PARTP,PID,NC,PGROUP%NTYPE,PGROUP%NPROT(NC),&
                                 PRAD(NC),VEL(NC),D(NC),KREV(NC),STARTPOS(NC),&
                                 STARTSTATE(NC))
-                !PLIST(PC) = PARTP
-                ADDPART = .TRUE.
-                EXIT
-              END IF
-            END DO
-            ! append particle if it wasn't added
-            IF(.NOT.ADDPART) THEN
-               PARTP=>PLIST(PGROUP%NPART+1)
-               CALL MAKEPARTICLE(PARTP,PID,NC,PGROUP%NTYPE,PGROUP%NPROT,&
-                                PRAD(NC),VEL(NC),D(NC),KREV(NC),STARTPOS(NC),&
-                                STARTSTATE(NC))
-            END IF
-            PGROUP%NPART = PGROUP%NPART+1
-            PGROUP%LASTID = PID
-          END IF
-        END DO
-      END IF
+            PGROUP%NPART  = PGROUP%NPART + 1
+            PGROUP%LASTID = PID                       
+         END IF
+      END DO
+      
 
       ! output snapshot to file
       IF(MOD(TC,SNAPEVERY).EQ.0) THEN
@@ -117,9 +108,9 @@ CONTAINS
       END IF
 
       ! output protein flux
-      IF(MOD(TC,OUTEVERY).EQ.0) THEN
-        CALL WRITEFLUX(PGROUP,OUTFILE,INFO,.TRUE.)
-      END IF
+      !IF(MOD(TC,OUTEVERY).EQ.0) THEN
+      !  CALL WRITEFLUX(PGROUP,OUTFILE,INFO,.TRUE.)
+      !END IF
     END DO
 
   END SUBROUTINE TRANSPORTSIM
