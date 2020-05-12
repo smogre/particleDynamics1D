@@ -1,5 +1,5 @@
-#OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o partdynamics.o fusionutils.o
-OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o 
+OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o partdynamics.o fusionutils.o
+TESTOBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o 
 
 FC = gfortran
 FLAGS = -O3 
@@ -29,8 +29,8 @@ default: $(OBJS) main.o
 osg: $(OBJS) main.o
 	$(FC) $(FLAGS) $(OSGFLAGS) $(DEBUGFLAGS) $(OBJS) main.o -o $(OSGEXE) $(OSGLIBS)
 
-test: $(OBJS) testmain.o
-	$(FC) $(FLAGS) $(DEBUGFLAGS) $(OBJS) testmain.o -o $(TESTEXE) $(LIBS)
+test: $(TESTOBJS) testmain.o
+	$(FC) $(FLAGS) $(DEBUGFLAGS) $(TESTOBJS) testmain.o -o $(TESTEXE) $(LIBS)
 
 clean: 
 	rm *.o *.mod

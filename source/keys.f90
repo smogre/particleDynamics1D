@@ -28,15 +28,15 @@ MODULE KEYS
 
   DOUBLE PRECISION :: KREV(MAXNTYPE) ! direction reversal rates for particle types
   DOUBLE PRECISION :: KSTOP(MAXNTYPE) ! stopping rates for particles
-  DOUBLE PRECISION :: D(MAXNTYPE) ! diffusion coefficient for diffusive particles
+  DOUBLE PRECISION :: DIFFCONST(MAXNTYPE) ! diffusion coefficient for diffusive particles
   INTEGER :: STARTSTATE(MAXNTYPE) !state in which particles start
 
   ! ----------------------------------------------------------------------------
   ! protein dynamics
   ! ----------------------------------------------------------------------------
   INTEGER, PARAMETER :: MAXNPROT = 2 ! maximum number of protein types
-  INTEGER :: NPROT ! number of protein types 
-  DOUBLE PRECISION :: PROTCONV(MAXNPROT,MAXNPROT) ! conversion rate between proteins
+  INTEGER :: NPROT(MAXNTYPE) ! number of protein types in each particle type
+  DOUBLE PRECISION :: PROTCONV(MAXNPROT,MAXNPROT,MAXNTYPE) ! conversion rate between proteins
 
   ! ----------------------------------------------------------------------------
   ! fusion parameters

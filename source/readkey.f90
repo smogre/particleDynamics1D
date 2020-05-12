@@ -26,7 +26,7 @@ SUBROUTINE READKEY
   ! ------ for initializing random number generator
   INTEGER :: TIMEVAL(8), SEED
   ! ---------------- temporary variables ---------------
-  INTEGER :: I,J
+  INTEGER :: I,J,K
   CHARACTER*100 :: DUMSTR
   LOGICAL :: LDUM
 
@@ -51,11 +51,11 @@ SUBROUTINE READKEY
 
   KREV = 1D0 ! rate of direction reversal
   KSTOP = 0D0 ! rate of stopping
-  D = 0D0 ! diffusion coefficient
+  DIFFCONST = 0D0 ! diffusion coefficient
 
   ! protein dynamics
   NPROT = 1
-  PROTCONV = 0
+  PROTCONV = 0D0
 
   ! fusion details
   KFUSE = 0D0 ! matrix of fusion rates
@@ -143,11 +143,11 @@ SUBROUTINE READKEY
           CALL READA(ACTION, CASESET=1)
         CASE('BUFLEN')
           CALL READF(BUFLEN)
-        CASE('D')
-          CALL READF(D(1))
-          D = D(1)
+        CASE('DIFFCONST')
+          CALL READF(DIFFCONST(1))
+          DIFFCONST = DIFFCONST(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
-            CALL READF(D(I))
+            CALL READF(DIFFCONST(I))
           END DO
         CASE('DOMLEN')
           CALL READF(DOMLEN)
@@ -182,7 +182,11 @@ SUBROUTINE READKEY
             CALL READI(NPART(I))
           END DO
         CASE('NPROT')
-          CALL READI(NPROT)
+          CALL READI(NPROT(1))
+          NPROT = NPROT(1)
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READI(NPROT(I))
+          END DO
         CASE('NREG')
           CALL READI(NREG)
         CASE('NSTEPS')
@@ -213,8 +217,9 @@ SUBROUTINE READKEY
           END DO
         CASE('PROTCONV')
           CALL READI(I)
-          DO J = 1,MIN(MAXNPROT,NITEMS-1)
-            CALL READF(PROTCONV(I,J))
+          CALL READI(J)
+          DO K = 1,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(PROTCONV(I,J,K))
           END DO
         CASE('REGPOS')
           CALL READF(REGPOS(1))
