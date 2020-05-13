@@ -10,19 +10,19 @@ IMPLICIT NONE
 CONTAINS
 
   !INSERT PARTICLE DYNAMICS CODE HERE
-  SUBROUTINE TRANSPORTSIM(PGROUP,DOMP,DOFUSION)
+  SUBROUTINE TRANSPORTSIM(PGROUP,DOMP,PARAMP,DOFUSION)
   !simulates the transport of phagosomes and lysosomes in a 1D domain
-    USE KEYS, ONLY: PRINTEVERY,SNAPEVERY,OUTEVERY,NSTEPS,DELT,SNAPFILE,&
-                    KPROD,PRAD,KREV,STARTPOS,STARTSTATE,OUTFILE,&
-                    USEPFUSE,PFUSE,KFUSE
+    USE KEYS, ONLY: PRINTEVERY,SNAPEVERY,OUTEVERY,NSTEPS,DELT,SNAPFILE,OUTFILE
     USE PARTICLEUTILS, ONLY: PARTICLEGROUP,PARTICLE,DOMAIN,OUTPUTSNAPSHOT,&
-                            MAKEPARTICLE
+                            MAKEPARTICLE,PARTICLEPARAMS,DELETEPARTICLE,&
+                            REMOVEPARTICLE
     USE FUSIONUTILS, ONLY: CHECKFUSION,FUSEPART                  
     USE MT19937, ONLY: RNORM,GRND
     
     TYPE(PARTICLEGROUP), POINTER :: PGROUP
     TYPE(PARTICLE), POINTER :: PLIST(:)
     TYPE(PARTICLE), POINTER :: PARTP
+    TYPE(PARTICLEPARAMS), POINTER :: PARAMP
     TYPE(DOMAIN), POINTER :: DOMP
 
     DOUBLE PRECISION, ALLOCATABLE :: INFO(:)
@@ -38,8 +38,8 @@ CONTAINS
 
     ! initial snapshot
     IF(SNAPEVERY.GT.0) THEN
-      ALLOCATE(INFO(3))
-      INFO = (/0D0,DELT,DOMP%DOMLEN/)
+      ALLOCATE(INFO(2))
+      INFO = (/0D0,DOMP%DOMLEN/)
       CALL OUTPUTSNAPSHOT(PGROUP,SNAPFILE,INFO,.FALSE.)
     END IF
 
@@ -51,24 +51,30 @@ CONTAINS
 
       ! go through each particle
       PLIST=>PGROUP%PLIST
-      DO PC = 1,PGROUP%NPART
+      DO PC = 1,PGROUP%MAXNPART
         IF(PLIST(PC)%ID.EQ.0) CONTINUE
         ! move particle in the current direction
-        PLIST(PC)%POS = MAX(MIN(PLIST(PC)%POS+PLIST(PC)%CURSTATE*PLIST(PC)%VEL&
-                        *DELT,DOMP%DOMLEN),0D0)
+        PLIST(PC)%POS = PLIST(PC)%POS+PLIST(PC)%CURSTATE*PLIST(PC)%VEL*DELT
+
+        ! delete particles that move out of bounds
+        IF((PLIST(PC)%POS.GT.DOMP%DOMLEN).OR.(PLIST(PC)%POS.LT.0D0)) THEN
+          CALL REMOVEPARTICLE(PGROUP,PC)
+          PRINT*, 'TESTX: REMOVING PARTICLE'
+          CONTINUE
+        END IF
 
         ! check for fusion
-        IF(DOFUSION.AND.PLIST(PC)%CANFUSE) THEN
-          DO MC = 1,PGROUP%NPART
-            IF(PLIST(MC)%ID.EQ.0) CONTINUE
-            CALL CHECKFUSION(CHECKFUSE,PLIST(PC)%POS,PLIST(PC)%POS,&
-                            PLIST(PC)%PTYPE,PLIST(PC)%PTYPE,PLIST(PC)%PRAD,&
-                            PLIST(PC)%PRAD)
-            IF(CHECKFUSE) THEN
-              CALL FUSEPART(PGROUP)
-            END IF
-          END DO
-        END IF
+        ! IF(DOFUSION.AND.PLIST(PC)%CANFUSE) THEN
+        !   DO MC = 1,PGROUP%NPART
+        !     IF(PLIST(MC)%ID.EQ.0) CONTINUE
+        !     CALL CHECKFUSION(CHECKFUSE,PLIST(PC)%POS,PLIST(PC)%POS,&
+        !                     PLIST(PC)%PTYPE,PLIST(PC)%PTYPE,PLIST(PC)%PRAD,&
+        !                     PLIST(PC)%PRAD)
+        !     IF(CHECKFUSE) THEN
+        !       CALL FUSEPART(PGROUP)
+        !     END IF
+        !   END DO
+        ! END IF
 
         ! check if particle changes direction
         IF(GRND().LE.1-EXP(-PLIST(PC)%KREV*DELT)) THEN
@@ -78,32 +84,30 @@ CONTAINS
       END DO
 
       ! particle production      
-        DO NC = 1,PGROUP%NTYPE ! go through each type of particle
-          ADDPART = .FALSE.
-          ! check if particle is produced
-          IF(GRND().LE.(1-EXP(-KPROD(NC)*DELT))) THEN
-            ! PRINT*, 'TESTX: ADDING PARTICLE'
-            PID = PGROUP%LASTID+1
+      DO NC = 1,PARAMP%NTYPE ! go through each type of particle
+        ADDPART = .FALSE.
+        ! check if particle is produced
+        IF(GRND().LE.(1-EXP(-PARAMP%KPROD(NC)*DELT))) THEN
+          PRINT*, 'TESTX: ADDING PARTICLE'
+          PID = PGROUP%LASTID+1
 
-            ! check you have space for a new particle
-            IF (PGROUP%NPART.EQ.PGROUP%MAXNPART) THEN
-               PRINT*, 'ERROR: too many particles added.', PGROUP%NPART, PGROUP%MAXNPART
-               STOP 1
-            ENDIF
+          ! check you have space for a new particle
+          IF (PGROUP%NPART.EQ.PGROUP%MAXNPART) THEN
+            PRINT*, 'ERROR: too many particles added.', PGROUP%NPART, PGROUP%MAXNPART
+            STOP 1
+          ENDIF
 
-            PARTP=>PLIST(PGROUP%NPART+1)
-            CALL MAKEPARTICLE(PARTP,PID,NC,PGROUP%NTYPE,PGROUP%NPROT(NC),&
-                                PRAD(NC),VEL(NC),D(NC),KREV(NC),STARTPOS(NC),&
-                                STARTSTATE(NC))
-            PGROUP%NPART  = PGROUP%NPART + 1
-            PGROUP%LASTID = PID                       
-         END IF
+          PARTP=>PLIST(PGROUP%NPART+1)
+          CALL MAKEPARTICLE(PARTP,PID,NC,PARAMP)
+          PGROUP%NPART  = PGROUP%NPART + 1
+          PGROUP%LASTID = PID                       
+        END IF
       END DO
       
 
       ! output snapshot to file
       IF(MOD(TC,SNAPEVERY).EQ.0) THEN
-        INFO(1) = TC
+        INFO(1) = TC*DELT
         CALL OUTPUTSNAPSHOT(PGROUP,SNAPFILE,INFO,.TRUE.)
       END IF
 

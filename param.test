@@ -38,13 +38,13 @@ KREV 0D0 0D0
 PRAD 0.1D0
 
 # particle velocities
-# VEL 4D0 1D0
+VEL 1D0 1D0
 
 # particle diffusion coefficients
 DIFFCONST 0D0
 
 # production rate
-KPROD 1D3 0D0
+KPROD 1D0 1D0
 
 
 ##############################################
@@ -52,7 +52,7 @@ KPROD 1D3 0D0
 ##############################################
 # number of protein types
 # default 2: non-degraded, degraded
-NPROT 2
+NPROT 0 2
 
 # initial protein content
 # format: i kij
@@ -108,7 +108,7 @@ REGPOS -1D0
 # simulation info
 ##############################################
 # time step
-DELT 1D-2
+DELT 5D-1
 # where to save output file
 OUTFILE 10 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots

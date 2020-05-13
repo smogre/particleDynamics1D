@@ -1,5 +1,6 @@
 MODULE PARTICLEUTILS
-  ! utilities for defining parameters and states of individual particles, particle sets, and domain information
+  ! utilities for defining parameters and states of individual particles,
+  ! particle sets, and domain information
 
   TYPE PARTICLE
   ! object containing information about individual particles
@@ -92,6 +93,8 @@ MODULE PARTICLEUTILS
 
     INTEGER :: NTYPE ! how many types of particles?
 
+    INTEGER :: MAXNPART ! maximum number of particles allowed
+
     ! velocity and diffusivity for each type
     DOUBLE PRECISION, POINTER  :: VEL(:), D(:)
 
@@ -179,15 +182,16 @@ CONTAINS
     ! General info for this snapshot
     NINFO = SIZE(INFO)
     WRITE (X1,'(I2)') NINFO
-    FMT1 = '(1I8,'//TRIM(X1)//'ES18.4E2'
+    FMT1 = '(1I6,'//TRIM(X1)//'ES15.3E2)'
     WRITE(99,FMT1) PGROUP%NPART,INFO
 
     PLIST=>PGROUP%PLIST
     
     DO PC = 1,PGROUP%NPART
        WRITE (X1,'(I2)') PLIST(PC)%NPROT+1
-       FMT2 = '(3I8,'//TRIM(X1)//'ES18.4E2)'
-       WRITE(99,FMT2) PC,PLIST(PC)%ID,PLIST(PC)%PTYPE,PLIST(PC)%POS, PLIST(PC)%PROT
+       FMT2 = '(4I6,'//TRIM(X1)//'ES15.3E2)'
+       WRITE(99,FMT2) PC,PLIST(PC)%ID,PLIST(PC)%PTYPE,PLIST(PC)%NPROT,&
+                      PLIST(PC)%POS, PLIST(PC)%PROT
     END DO
 
     CLOSE(99)
@@ -249,12 +253,13 @@ CONTAINS
     
 
     NPROT = PARAMP%NPROT(PTYPE)
-    ALLOCATE(PARTP%PROT(NPROT))
-    PARTP%NPROT = NPROT
-    PARTP%PROT = PARAMP%STARTPROT(:,PTYPE)
-
-    ALLOCATE(PARTP%PROTCONV(NPROT,NPROT))
-    PARTP%PROTCONV = PARAMP%PROTCONV(1:NPROT,1:NPROT,PTYPE)
+    IF(NPROT.GT.0) THEN
+      ALLOCATE(PARTP%PROT(NPROT))
+      PARTP%NPROT = NPROT
+      PARTP%PROT = PARAMP%STARTPROT(:,PTYPE)
+      ALLOCATE(PARTP%PROTCONV(NPROT,NPROT))
+      PARTP%PROTCONV = PARAMP%PROTCONV(1:NPROT,1:NPROT,PTYPE)
+    END IF
  
     IF(PRESENT(CURREG)) THEN
       PARTP%CURREG = CURREG
@@ -305,7 +310,7 @@ CONTAINS
     END IF
     PARTP%CURREG = 0
 
-    DEALLOCATE(PARTP%PROT,PARTP%PROTCONV)
+    IF(PARTP%NPROT.GT.0) DEALLOCATE(PARTP%PROT,PARTP%PROTCONV)
     
     PARTP%ARRAYSET = .FALSE.
   END SUBROUTINE DELETEPARTICLE
@@ -394,10 +399,11 @@ CONTAINS
   END SUBROUTINE CLEANUPDOMAIN
 
   SUBROUTINE SETUPPARTICLEPARAMS(PARAMP)
+  ! set up and initiate object to track particle parameters
     USE KEYS, ONLY : NTYPE, VEL, DIFFCONST, KPROD, KREV, STARTPOS, STARTSTATE,&
-         & PRAD,NPROT,KFUSE,PFUSE,USEPFUSE,PROTCONV,MAXNPROT, STARTPROT
+         & PRAD,NPROT,KFUSE,PFUSE,USEPFUSE,PROTCONV,MAXNPROT, STARTPROT,MAXNPART
 
-    ! set up an initiate object to track particle parameters
+    
     IMPLICIT NONE
     TYPE(PARTICLEPARAMS), POINTER :: PARAMP
     
@@ -409,6 +415,7 @@ CONTAINS
     ALLOCATE(PARAMP%KFUSE(NTYPE,NTYPE),PARAMP%PFUSE(NTYPE,NTYPE))
     ALLOCATE(PARAMP%STARTPROT(MAXNPROT,NTYPE))
 
+    PARAMP%MAXNPART = MAXNPART
     PARAMP%VEL = VEL(1:NTYPE)
     PARAMP%D = DIFFCONST(1:NTYPE)
     PARAMP%KPROD = KPROD(1:NTYPE)

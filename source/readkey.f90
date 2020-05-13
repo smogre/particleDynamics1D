@@ -177,13 +177,11 @@ SUBROUTINE READKEY
           END DO
         CASE('NPART')
           CALL READI(NPART(1))
-          NPART = NPART(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READI(NPART(I))
           END DO
         CASE('NPROT')
           CALL READI(NPROT(1))
-          NPROT = NPROT(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READI(NPROT(I))
           END DO
