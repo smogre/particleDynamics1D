@@ -158,7 +158,7 @@ SUBROUTINE READKEY
         CASE('KFUSE')
           USEPFUSE = .FALSE.
           CALL READI(I)
-          DO J = 1,MIN(MAXNTYPE,NITEMS-1)
+          DO J = 1,MIN(MAXNTYPE,NITEMS-2)
             CALL READF(KFUSE(I,J))
           END DO
         CASE('KPROD')
@@ -202,7 +202,7 @@ SUBROUTINE READKEY
           IF (NITEMS.GT.2) CALL READA(OUTFILE)
         CASE('PFUSE')
           CALL READI(I)
-          DO J = 1,MIN(MAXNTYPE,NITEMS-1)
+          DO J = 1,MIN(MAXNTYPE,NITEMS-2)
             CALL READF(PFUSE(I,J))
           END DO
         CASE('PRINTEVERY')
@@ -216,7 +216,7 @@ SUBROUTINE READKEY
         CASE('PROTCONV')
           CALL READI(I)
           CALL READI(J)
-          DO K = 1,MIN(MAXNTYPE,NITEMS-1)
+          DO K = 1,MIN(MAXNTYPE,NITEMS-3)
             CALL READF(PROTCONV(I,J,K))
           END DO
         CASE('REGPOS')
@@ -241,7 +241,7 @@ SUBROUTINE READKEY
           END DO
         CASE('STARTPROT')
           CALL READI(I)
-          DO J = 1,MIN(MAXNPROT,NITEMS-1)
+          DO J = 1,MIN(MAXNPROT,NITEMS-2)
             CALL READF(STARTPROT(I,J))
           END DO
         CASE('STARTSTATE')

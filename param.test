@@ -44,7 +44,8 @@ VEL 1D0 1D0
 DIFFCONST 0D0
 
 # production rate
-KPROD 1D0 1D0
+KPROD 1D2 1D2
+#KPROD 0D0 0D0
 
 
 ##############################################
@@ -52,7 +53,7 @@ KPROD 1D0 1D0
 ##############################################
 # number of protein types
 # default 2: non-degraded, degraded
-NPROT 0 2
+NPROT 2 2
 
 # initial protein content
 # format: i kij
@@ -114,4 +115,4 @@ OUTFILE 10 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots
 SNAPSHOTS 1 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # print status to console
-PRINTEVERY 1D3
+PRINTEVERY 1
