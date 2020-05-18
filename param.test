@@ -53,19 +53,21 @@ KPROD 1D2 1D2
 ##############################################
 # number of protein types
 # default 2: non-degraded, degraded
+# protein 1: non-degraded, protein 2: degraded
 NPROT 2 2
 
 # initial protein content
 # format: i kij
 # where i is the particle type, kij is the initial content of protein j in i
 STARTPROT 1 0D0 0D0
-STARTPROT 2 0D0 0D0
+STARTPROT 2 1D0 0D0
 
 # protein conversion rates
 # format: i j k_ijk
 # where i,j are protein types,
-# k_ijk is the rate of conversion of prot i to j in particle type k
+# k_ijk is the rate of conversion of prot j to i in particle type k
 PROTCONV 2 1 0D0 1D0
+PROTCONV 1 1 0D0 -1D0
 
 ##############################################
 # fusion parameters
@@ -111,7 +113,7 @@ REGPOS -1D0
 # time step
 DELT 5D-1
 # where to save output file
-OUTFILE 10 /data/SimData/particledynamics1D/outfiles/*.out
+OUTFILE 1 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots
 SNAPSHOTS 1 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # print status to console

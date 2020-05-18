@@ -272,6 +272,7 @@ SUBROUTINE READKEY
 
   ! ----------- fix file names -----------
   CALL REPLACESUBSTR(SNAPFILE,'*',TRIM(ADJUSTL(ARG)))
+  CALL REPLACESUBSTR(OUTFILE,'*',TRIM(ADJUSTL(ARG)))
   ! ---------------------------
 
   ! Initiate random number generator 
