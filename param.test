@@ -1,10 +1,10 @@
 # parameter file for simulating 1D particle dynamics
 
 # what action to perform
-ACTION DOFUSION
+ACTION RUNDYNAMICS
 
 # number of steps
-NSTEPS 5
+NSTEPS 1D1
 
 # number of trials
 NTRIALS 1
@@ -15,6 +15,7 @@ NTRIALS 1
 
 # number of particle types
 # (1 = lysosome, 2 = autophagosome)
+# higher particle type retains identity after fusion
 NTYPE 2
 
 # initial number of particles of each type
@@ -44,8 +45,8 @@ VEL 1D0 1D0
 DIFFCONST 0D0
 
 # production rate
-KPROD 1D2 1D2
-#KPROD 0D0 0D0
+#KPROD 1D0 1D0
+KPROD 0D0 0D0
 
 
 ##############################################
@@ -83,8 +84,8 @@ USEPFUSE T
 # fusion probability
 # format: i pij
 # where i is the particle type, pij is the probability of fusion between i and j
-PFUSE 1 0D0 5D-1
-PFUSE 2 5D-1 0D0
+PFUSE 1 0D0 1D0
+PFUSE 2 1D0 0D0
 
 # fusion rates
 # matrix of fusion rates between particle types
@@ -93,6 +94,9 @@ PFUSE 2 5D-1 0D0
 # uncomment following lines to use rate instead of probability
 # KFUSE 1 0D0 1D0
 # KFUSE 2 1D0 0D0
+
+# number of fusion events needed to saturate
+MAXNFUSE 0 1
 
 ##############################################
 # domain information
@@ -111,7 +115,7 @@ REGPOS -1D0
 # simulation info
 ##############################################
 # time step
-DELT 5D-1
+DELT 1D-1
 # where to save output file
 OUTFILE 1 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots

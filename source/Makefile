@@ -1,4 +1,4 @@
-OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o partdynamics.o fusionutils.o r8lib.o
+OBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o partdynamics.o fusionutils.o
 TESTOBJS = keys.o readkey.o genutil.o mt19937.o inputparams.o particleutils.o 
 
 FC = gfortran
@@ -44,6 +44,6 @@ veryclean: clean
 # ------------
 readkey.o: inputparams.o keys.o genutil.o
 genutil.o: mt19937.o 
-partdynamics.o: keys.o mt19937.o particleutils.o fusionutils.o r8lib.o
+partdynamics.o: keys.o mt19937.o particleutils.o fusionutils.o
 fusionutils.o: keys.o mt19937.o particleutils.o
 particleutils.o: keys.o genutil.o mt19937.o

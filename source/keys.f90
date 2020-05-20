@@ -45,6 +45,7 @@ MODULE KEYS
   DOUBLE PRECISION :: PFUSE(MAXNTYPE,MAXNTYPE) !matrix for fusion probabilities
   LOGICAL :: DOFUSION ! implement fusion?
   LOGICAL :: USEPFUSE ! use constant fusion probability?
+  INTEGER :: MAXNFUSE(MAXNTYPE)
 
   ! ----------------------------------------------------------------------------
   ! particle production

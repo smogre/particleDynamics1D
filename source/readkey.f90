@@ -60,6 +60,7 @@ SUBROUTINE READKEY
   ! fusion details
   KFUSE = 0D0 ! matrix of fusion rates
   PFUSE = 0D0 ! matrix of fusion probabilities
+  MAXNFUSE = 1 ! number of fusion events needed for saturation
   DOFUSION = .FALSE.
   USEPFUSE = .FALSE.
 
@@ -174,6 +175,11 @@ SUBROUTINE READKEY
           CALL READF(KSTOP(1))
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(KSTOP(I))
+          END DO
+        CASE('MAXNFUSE')
+          CALL READI(MAXNFUSE(1))
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READI(MAXNFUSE(I))
           END DO
         CASE('NPART')
           CALL READI(NPART(1))

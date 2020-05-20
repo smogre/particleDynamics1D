@@ -38,6 +38,9 @@ MODULE PARTICLEUTILS
     ! number of fusion events
     INTEGER :: NFUSE
 
+    ! number of fusion events needed to saturate decay rate
+    INTEGER :: MAXNFUSE
+
     ! Number of different types of possible fusion events
     INTEGER :: NFUSETYPE
     
@@ -121,6 +124,7 @@ MODULE PARTICLEUTILS
     DOUBLE PRECISION, POINTER :: PROTCONV(:,:,:)
 
     ! rate of fusion and/or prob of fusion
+    INTEGER, POINTER :: MAXNFUSE(:)
     DOUBLE PRECISION, POINTER :: KFUSE(:,:), PFUSE(:,:)
     LOGICAL :: USEPFUSE
 
@@ -149,12 +153,11 @@ MODULE PARTICLEUTILS
 
 CONTAINS
 
-  SUBROUTINE OUTPUTSNAPSHOT(PGROUP,FILENAME,INFO,APPEND)
+  SUBROUTINE OUTPUTSNAPSHOT(GROUPLIST,FILENAME,INFO,NTRIALS,APPEND)
   ! Output a snapshot of current configuration
     ! ------------------
     ! input parameters:
-    ! PGROUP: object describing group of particles
-    ! DOMP: object describing domain
+    ! GROUPLIST: object describing multiple particle groups
     ! FILENAME: output file
     ! INFO: additional informational float (eg: time)
     ! APPEND: append to file or rewrite?
@@ -163,13 +166,15 @@ CONTAINS
 
     IMPLICIT NONE
 
+    TYPE(PARTICLEGROUP), TARGET :: GROUPLIST(NTRIALS)
     TYPE(PARTICLEGROUP), POINTER :: PGROUP
     TYPE(PARTICLE), POINTER :: PLIST(:)
+    INTEGER, INTENT(IN) :: NTRIALS
     CHARACTER(LEN=*), INTENT(IN) :: FILENAME
     DOUBLE PRECISION, INTENT(IN) :: INFO(:)
     LOGICAL, INTENT(IN) :: APPEND
 
-    INTEGER :: PC,NINFO
+    INTEGER :: TRC,PC,NINFO
     CHARACTER(LEN=2) :: X1
     CHARACTER(LEN=16) :: FMT1,FMT2
 
@@ -179,24 +184,65 @@ CONTAINS
       OPEN(UNIT=99,FILE=FILENAME,STATUS='UNKNOWN')
     END IF
 
-    ! General info for this snapshot
+    ! Write general info for this snapshot
     NINFO = SIZE(INFO)
     WRITE (X1,'(I2)') NINFO
-    FMT1 = '(1I6,'//TRIM(X1)//'ES15.3E2)'
-    WRITE(99,FMT1) SUM(PGROUP%NPART),INFO
+    FMT1 = '('//TRIM(X1)//'ES15.3E2)'
+    WRITE(99,FMT1) INFO
 
-    PLIST=>PGROUP%PLIST
-    
-    DO PC = 1,SUM(PGROUP%NPART)
-       WRITE (X1,'(I2)') PLIST(PC)%NPROT+1
-       FMT2 = '(4I6,'//TRIM(X1)//'ES15.3E2)'
-       WRITE(99,FMT2) PC,PLIST(PC)%ID,PLIST(PC)%PTYPE,PLIST(PC)%NPROT,&
-                      PLIST(PC)%POS,PLIST(PC)%PROT
+    DO TRC = 1,NTRIALS
+      PGROUP=>GROUPLIST(TRC)
+      PLIST=>PGROUP%PLIST
+      WRITE(99,'(2I8)') TRC,SUM(PGROUP%NPART)
+      DO PC = 1,SUM(PGROUP%NPART)
+        WRITE (X1,'(I2)') PLIST(PC)%NPROT+1
+        FMT2 = '(4I6,'//TRIM(X1)//'ES15.3E2)'
+        WRITE(99,FMT2) PC,PLIST(PC)%ID,PLIST(PC)%PTYPE,PLIST(PC)%NPROT,&
+                        PLIST(PC)%POS,PLIST(PC)%PROT
+      END DO
     END DO
 
     CLOSE(99)
 
   END SUBROUTINE OUTPUTSNAPSHOT
+
+  SUBROUTINE OUTPUTPROT(CURTIME,PROT,FILENAME,NPROT,NTRIALS,APPEND)
+    ! Output a snapshot of current configuration
+      ! ------------------
+      ! input parameters:
+      ! GROUPLIST: object describing multiple particle groups
+      ! FILENAME: output file
+      ! INFO: additional informational float (eg: time)
+      ! APPEND: append to file or rewrite?
+      ! -------------
+      ! output format:
+  
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, INTENT(IN) :: CURTIME
+      DOUBLE PRECISION, INTENT(IN) :: PROT(NPROT)
+      INTEGER, INTENT(IN) :: NPROT,NTRIALS
+  
+      CHARACTER(LEN=*), INTENT(IN) :: FILENAME
+      LOGICAL, INTENT(IN) :: APPEND
+
+      CHARACTER(LEN=2) :: X1
+  
+      IF (APPEND) THEN
+        OPEN(UNIT=44,FILE=FILENAME,STATUS='UNKNOWN',POSITION='APPEND')
+      ELSE
+        OPEN(UNIT=44,FILE=FILENAME,STATUS='UNKNOWN')
+      END IF
+  
+      IF(CURTIME.EQ.0D0) THEN
+        WRITE(44,'(2I8)') NPROT, NTRIALS
+      ELSE
+        WRITE(X1,'(I2)') NPROT+1
+        WRITE(44,'('//TRIM(X1)//'ES15.3E2)') CURTIME,PROT
+      END IF
+      CLOSE(44)
+  
+    END SUBROUTINE OUTPUTPROT
 
   SUBROUTINE MAKEPARTICLE(PARTP,PARTID,PTYPE,PARAMP,CANFUSE,CURREG)
   ! make a new particle and assign parameters
@@ -248,6 +294,7 @@ CONTAINS
     PARTP%PFUSE = PARAMP%PFUSE(:,PTYPE)
     ALLOCATE(PARTP%KFUSE(NTYPE))
     PARTP%KFUSE = PARAMP%KFUSE(:,PTYPE)
+    PARTP%MAXNFUSE = PARAMP%MAXNFUSE(PTYPE)
 
     NPROT = PARAMP%NPROT(PTYPE)
     PARTP%NPROT = NPROT
@@ -429,7 +476,8 @@ CONTAINS
   SUBROUTINE SETUPPARTICLEPARAMS(PARAMP)
   ! set up and initiate object to track particle parameters
     USE KEYS, ONLY : NTYPE, VEL, DIFFCONST, KPROD, KREV, STARTPOS, STARTSTATE,&
-         & PRAD,NPROT,KFUSE,PFUSE,USEPFUSE,PROTCONV,MAXNPROT, STARTPROT,MAXNPART
+         & PRAD,NPROT,KFUSE,PFUSE,USEPFUSE,PROTCONV,MAXNPROT, STARTPROT,MAXNPART,&
+         MAXNFUSE
 
     
     IMPLICIT NONE
@@ -440,7 +488,8 @@ CONTAINS
          & PARAMP%KREV(NTYPE), PARAMP%STARTPOS(NTYPE), PARAMP%STARTSTATE(NTYPE),&
          & PARAMP%PRAD(NTYPE), PARAMP%NPROT(NTYPE))
     ALLOCATE(PARAMP%PROTCONV(MAXNPROT,MAXNPROT,NTYPE))
-    ALLOCATE(PARAMP%KFUSE(NTYPE,NTYPE),PARAMP%PFUSE(NTYPE,NTYPE))
+    ALLOCATE(PARAMP%KFUSE(NTYPE,NTYPE),PARAMP%PFUSE(NTYPE,NTYPE),&
+              PARAMP%MAXNFUSE(NTYPE))
     ALLOCATE(PARAMP%STARTPROT(NTYPE,MAXNPROT))
 
     PARAMP%MAXNPART = MAXNPART
@@ -458,6 +507,7 @@ CONTAINS
     PARAMP%USEPFUSE = USEPFUSE
     PARAMP%KFUSE = KFUSE(1:NTYPE,1:NTYPE)
     PARAMP%PFUSE = PFUSE(1:NTYPE,1:NTYPE)
+    PARAMP%MAXNFUSE = MAXNFUSE(1:NTYPE)
 
     PARAMP%STARTPROT = STARTPROT(1:NTYPE,:)
 
