@@ -2,6 +2,8 @@
 *.aux
 *.asv
 *.avi
+*.bbl
+*.blg
 *~
 *.toc
 *.nav
