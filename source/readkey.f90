@@ -73,7 +73,7 @@ SUBROUTINE READKEY
   ! domain info
   DOMLEN = 1D0 ! domain length
   NREG = 0 ! number of regions
-  REGPOS = 0D0 ! region positions
+  REGPOS = -1D0 ! region positions
 
 
   ! input/output  
@@ -163,31 +163,38 @@ SUBROUTINE READKEY
             CALL READF(KFUSE(I,J))
           END DO
         CASE('KPROD')
-          DO I = 1,MIN(MAXNTYPE,NITEMS-1)
+          CALL READF(KPROD(1))
+          KPROD = KPROD(1)
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(KPROD(I))
           END DO
         CASE('KREV')
           CALL READF(KREV(1))
+          KREV = KREV(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(KREV(I))
           END DO
         CASE('KSTOP')
           CALL READF(KSTOP(1))
+          KSTOP = KSTOP(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(KSTOP(I))
           END DO
         CASE('MAXNFUSE')
           CALL READI(MAXNFUSE(1))
+          MAXNFUSE = MAXNFUSE(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READI(MAXNFUSE(I))
           END DO
         CASE('NPART')
           CALL READI(NPART(1))
+          NPART = NPART(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READI(NPART(I))
           END DO
         CASE('NPROT')
           CALL READI(NPROT(1))
+          NPROT = NPROT(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READI(NPROT(I))
           END DO
@@ -203,22 +210,24 @@ SUBROUTINE READKEY
             PRINT*, 'Maximum number of particle types allowed is ',MAXNTYPE
             NTYPE = MAXNTYPE
           END IF
-        CASE('OUTFILE')
+        CASE('OUTPUT')
           IF (NITEMS.GT.1) CALL READI(OUTEVERY)
           IF (NITEMS.GT.2) CALL READA(OUTFILE)
+        CASE('OUTFILE')
+          CALL READA(OUTFILE)
         CASE('PFUSE')
           CALL READI(I)
           DO J = 1,MIN(MAXNTYPE,NITEMS-2)
             CALL READF(PFUSE(I,J))
           END DO
-        CASE('PRINTEVERY')
-          CALL READI(PRINTEVERY)
         CASE('PRAD')   
           CALL READF(PRAD(1))
           PRAD = PRAD(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(PRAD(I))
           END DO
+        CASE('PRINTEVERY')
+          CALL READI(PRINTEVERY)
         CASE('PROTCONV')
           CALL READI(I)
           CALL READI(J)
@@ -242,6 +251,7 @@ SUBROUTINE READKEY
           IF (NITEMS.GT.3) CALL READO(APPENDSNAPSHOTS)
         CASE('STARTPOS')
           CALL READF(STARTPOS(1))
+          STARTPOS = STARTPOS(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(STARTPOS(I))
           END DO

@@ -1,4 +1,5 @@
 # parameter file for simulating 1D particle dynamics
+# refer to README.pdf for more information on keywords
 
 # what action to perform
 ACTION RUNDYNAMICS
@@ -117,7 +118,7 @@ REGPOS -1D0
 # time step
 DELT 1D-1
 # where to save output file
-OUTFILE 1 /data/SimData/particledynamics1D/outfiles/*.out
+OUTPUT 1 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots
 SNAPSHOTS 1 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # print status to console
