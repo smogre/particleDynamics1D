@@ -49,7 +49,7 @@ SUBROUTINE READKEY
   PRAD = 1D-2 ! particle radius (different radii can be assigned to different particles)
   BUFLEN = 0D0 ! buffer length to determine contact
 
-  KREV = 1D0 ! rate of direction reversal
+  KREV = 0D0 ! rate of direction reversal
   KSTOP = 0D0 ! rate of stopping
   DIFFCONST = 0D0 ! diffusion coefficient
 
@@ -87,7 +87,7 @@ SUBROUTINE READKEY
   ! dynamics
   DELT = 1D-4 ! time step
   NSTEPS = INT(1D6) ! number of brownian steps to run
-  PRINTEVERY = 1 ! how often to print output
+  PRINTEVERY = 0 ! how often to print output
     
   ! -------------------------
   ! Read in all parameter files, starting with the ones specified on command line
@@ -170,7 +170,7 @@ SUBROUTINE READKEY
           END DO
         CASE('KREV')
           CALL READF(KREV(1))
-          KREV = KREV(1)
+          !KREV = KREV(1)
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(KREV(I))
           END DO

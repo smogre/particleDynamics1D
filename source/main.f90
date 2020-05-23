@@ -80,8 +80,12 @@ PROGRAM MAIN
         DO NC = 1,NTYPE
           DO CC = 1,NPART(NC)
             PARTP=>PLIST(PID)
-            CALL MAKEPARTICLE(PARTP,PID,NC,PARAMP,.TRUE.)
+            CALL MAKEPARTICLE(PARTP,PID,NC,PARAMP,CANFUSE=.TRUE.)
             PID = PID+1
+            IF(PID.GE.PARAMP%MAXNPART) THEN
+              PRINT*, 'ERROR: too many particles'
+              STOP 1
+            END IF
           END DO
         END DO
         CALL SETUPPARTICLEGROUP(PGROUP,NPART,PLIST)
