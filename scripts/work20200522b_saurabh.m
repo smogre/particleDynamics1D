@@ -1,8 +1,8 @@
 %% test effect of fusion rates
-kfvals = [0,0.1,1,10];
+kfvals = [0,1,10];
 flist = dir('/data/SimData/particledynamics1D/outfiles/*fuse*');
 tic
-nk = 4;
+nk = 3;
 nsave = 100;
 kswitch = logspace(-2,4,nk);
 cellprot = zeros(nsave,2,nk);
@@ -29,17 +29,17 @@ protflux_ss = squeeze(mean(protflux(ssinds-1,:,:)))';
 %% plot protein content/flux
 cmap = jet(nprot);
 for nc = 1:nprot
-% 	semilogx(kfvals,cellprot_ss(:,nc),'o-','Color',cmap(nc,:),'DisplayName',...
-% 																									sprintf('Steady state cell protein, type %d',nc));
-	semilogx(kfvals,cellprot_ss(:,nc),'o-','Color',cmap(nc,:),'DisplayName',...
-																									sprintf('Steady state protein flux, type %d',nc));
+	plot(kfvals,cellprot_ss(:,nc),'o-','Color',cmap(nc,:),'DisplayName',...
+																									sprintf('Steady state cell protein, type %d',nc));
+% 	plot(kfvals,cellprot_ss(:,nc),'o-','Color',cmap(nc,:),'DisplayName',...
+% 																									sprintf('Steady state protein flux, type %d',nc));
 	hold on
-% 	semilogx(kfvals,axprot_ss(:,nc),'o--','Color',cmap(nc,:),'DisplayName',...
-% 																								sprintf('Steady state axonal protein, type %d',nc));
+	plot(kfvals,axprot_ss(:,nc),'o--','Color',cmap(nc,:),'DisplayName',...
+																								sprintf('Steady state axonal protein, type %d',nc));
 end
 plot_cleanup
 xlabel('fusion rate')
-ylabel('steady state protein flux')
+ylabel('steady state protein content')
 % title(sprintf('$k_\\mathrm{fuse}$ = 0.1/s, $p1_\\mathrm{mean}$ = %0.3f, $p2_\\mathrm{mean}$ = %0.3f',mean(protflux(51:end,:))))
 title('effect of fusion rate')
 legend show

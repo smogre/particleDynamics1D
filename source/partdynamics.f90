@@ -69,6 +69,12 @@ CONTAINS
       DO TRC = 1,NTRIALS
         PGROUP=>GROUPLIST(TRC)
 
+        ! check for fusion
+        IF(DOFUSION) THEN
+          CALL UPDATEFUSESTATE(PGROUP,PARAMP)
+          CALL FUSEPARTICLES(PGROUP,PARAMP)
+        END IF
+
         ! move particles, change direction, and delete out of bounds
         PC = 1
         NPROC = 0
@@ -105,18 +111,12 @@ CONTAINS
           PC = PC+1
         END DO
 
-        ! check for fusion
-        IF(DOFUSION) THEN
-          CALL UPDATEFUSESTATE(PGROUP,PARAMP)
-          CALL FUSEPARTICLES(PGROUP,PARAMP)
-        END IF
-
-        ! particle production
-        CALL PRODUCEPARTICLES(PGROUP,PARAMP)      
-
         ! measure protein content in the axon
         CALL GETAXPROT(AXPROT,PGROUP,MAXNPROT)
         TOTAXPROT(1:MAXNPROT) = TOTAXPROT(1:MAXNPROT)+AXPROT
+        
+        ! particle production
+        CALL PRODUCEPARTICLES(PGROUP,PARAMP)      
 
       END DO
 
