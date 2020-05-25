@@ -20,7 +20,7 @@ NTRIALS 1
 NTYPE 2
 
 # initial number of particles of each type
-NPART 2 1
+NPART 1 1
 
 # starting position for particle types
 # negative values => start uniformly in domain
@@ -74,7 +74,7 @@ PROTCONV 1 1 0D0 -1D1
 ##############################################
 # fusion parameters
 ##############################################
-DOFUSION t
+DOFUSION f
 
 # buffer length to determine touch
 BUFLEN 0D0
