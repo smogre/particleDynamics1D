@@ -195,7 +195,7 @@ CONTAINS
       PLIST=>PGROUP%PLIST
       WRITE(99,'(2I8)') TRC,SUM(PGROUP%NPART)
       DO PC = 1,SUM(PGROUP%NPART)
-        WRITE(99,'(4I6)'),PC,PLIST(PC)%ID,PLIST(PC)%PTYPE,PLIST(PC)%NPROT
+        WRITE(99,'(5I6)'),PC,PLIST(PC)%ID,PLIST(PC)%PTYPE,PLIST(PC)%NPROT,PLIST(PC)%NFUSE
         WRITE (X1,'(I2)') PLIST(PC)%NPROT+1
         FMT2 = '('//TRIM(X1)//'ES15.3E2)'
         IF(PLIST(PC)%NPROT.GT.0) THEN
@@ -212,41 +212,78 @@ CONTAINS
 
   SUBROUTINE OUTPUTPROT(CURTIME,CELLPROT,AXPROT,FILENAME,NPROT,NTRIALS,APPEND)
     ! Output a snapshot of current configuration
-      ! ------------------
-      ! input parameters:
-      ! GROUPLIST: object describing multiple particle groups
-      ! FILENAME: output file
-      ! INFO: additional informational float (eg: time)
-      ! APPEND: append to file or rewrite?
-      ! -------------
-      ! output format:
-  
-      IMPLICIT NONE
+    ! ------------------
+    ! input parameters:
+    ! GROUPLIST: object describing multiple particle groups
+    ! FILENAME: output file
+    ! INFO: additional informational float (eg: time)
+    ! APPEND: append to file or rewrite?
+    ! -------------
+    ! output format:
 
-      DOUBLE PRECISION, INTENT(IN) :: CURTIME
-      DOUBLE PRECISION, INTENT(IN) :: CELLPROT(NPROT),AXPROT(NPROT)
-      INTEGER, INTENT(IN) :: NPROT,NTRIALS
-  
-      CHARACTER(LEN=*), INTENT(IN) :: FILENAME
-      LOGICAL, INTENT(IN) :: APPEND
+    IMPLICIT NONE
 
-      CHARACTER(LEN=2) :: X1
+    DOUBLE PRECISION, INTENT(IN) :: CURTIME
+    DOUBLE PRECISION, INTENT(IN) :: CELLPROT(NPROT),AXPROT(NPROT)
+    INTEGER, INTENT(IN) :: NPROT,NTRIALS
+
+    CHARACTER(LEN=*), INTENT(IN) :: FILENAME
+    LOGICAL, INTENT(IN) :: APPEND
+
+    CHARACTER(LEN=2) :: X1
+
+    IF (APPEND) THEN
+      OPEN(UNIT=44,FILE=FILENAME,STATUS='UNKNOWN',POSITION='APPEND')
+    ELSE
+      OPEN(UNIT=44,FILE=FILENAME,STATUS='UNKNOWN')
+    END IF
+
+    IF(CURTIME.EQ.0D0) THEN
+      WRITE(44,'(2I8)') NPROT, NTRIALS
+    ELSE
+      WRITE(X1,'(I2)') 2*NPROT+1
+      WRITE(44,'('//TRIM(X1)//'ES15.3E2)') CURTIME,CELLPROT,AXPROT
+    END IF
+    CLOSE(44)
   
-      IF (APPEND) THEN
-        OPEN(UNIT=44,FILE=FILENAME,STATUS='UNKNOWN',POSITION='APPEND')
-      ELSE
-        OPEN(UNIT=44,FILE=FILENAME,STATUS='UNKNOWN')
-      END IF
+  END SUBROUTINE OUTPUTPROT
+
+  SUBROUTINE OUTPUTNFUSEDIST(CURTIME,NFUSEDIST,NREG,NTRIALS,REGPOS,DOMLEN,FILENAME,APPEND)
+    ! Output the spatial distribution of number of fusions
+    ! ------------------
+    ! -------------
+    ! output format:
+
+    IMPLICIT NONE
+
+    DOUBLE PRECISION, INTENT(IN) :: CURTIME,DOMLEN
+    INTEGER, INTENT(IN) :: NFUSEDIST(NREG+1)
+    INTEGER, INTENT(IN) :: NTRIALS, NREG
+    DOUBLE PRECISION, INTENT(IN) :: REGPOS(NREG)
+
+    CHARACTER(LEN=*), INTENT(IN) :: FILENAME
+    LOGICAL, INTENT(IN) :: APPEND
+
+    CHARACTER(LEN=4) :: X1,X2
+
+    IF (APPEND) THEN
+      OPEN(UNIT=44,FILE=FILENAME,STATUS='UNKNOWN',POSITION='APPEND')
+    ELSE
+      OPEN(UNIT=44,FILE=FILENAME,STATUS='UNKNOWN')
+    END IF
+
+    IF(CURTIME.EQ.0D0) THEN
+      WRITE(X1,'(I4)') NREG
+      WRITE(44,'(2I8,1ES15.3E2)') NREG, NTRIALS, DOMLEN
+      WRITE(44,'('//TRIM(X1)//'ES15.3E2)') REGPOS
+    ELSE
+      WRITE(X2,'(I4)') NREG+2
+      WRITE(44,'(1ES15.3E2,'//TRIM(X2)//'I8)') CURTIME,NFUSEDIST
+    END IF
+    CLOSE(44)
   
-      IF(CURTIME.EQ.0D0) THEN
-        WRITE(44,'(2I8)') NPROT, NTRIALS
-      ELSE
-        WRITE(X1,'(I2)') 2*NPROT+1
-        WRITE(44,'('//TRIM(X1)//'ES15.3E2)') CURTIME,CELLPROT,AXPROT
-      END IF
-      CLOSE(44)
+  END SUBROUTINE OUTPUTNFUSEDIST
   
-    END SUBROUTINE OUTPUTPROT
 
   SUBROUTINE MAKEPARTICLE(PARTP,PARTID,PTYPE,PARAMP,CANFUSE,CURREG,STARTUNIF)
   ! make a new particle and assign parameters

@@ -79,10 +79,12 @@ SUBROUTINE READKEY
   ! input/output  
   SNAPFILE = '*.snap.out' ! snapshot file
   OUTFILE = '*.out' ! output file
+  NFUSEFILE = '*.fuse.out' ! file to write spatial distribution of fusion events
   DUMPSNAPSHOTS = .FALSE. ! periodically dump snapshots
   APPENDSNAPSHOTS = .FALSE. ! append snapshots to file rather than replacing
   SNAPEVERY = 0 ! how often to dump snapshots
   OUTEVERY = 0 ! how often to write to output file
+  FUSEDISTEVERY = 0 !how often to write distribution of fusion events
   
   ! dynamics
   DELT = 1D-4 ! time step
@@ -156,6 +158,10 @@ SUBROUTINE READKEY
           CALL READF(DELT)
         CASE('DOFUSION')
           CALL READO(DOFUSION)
+        CASE('FUSEDIST')
+          IF (NITEMS.GT.1) CALL READI(FUSEDISTEVERY)
+          IF (NITEMS.GT.2) CALL READA(NFUSEFILE)
+          ! IF (NITEMS.GT.3) CALL READO(APPENDSNAPSHOTS)
         CASE('KFUSE')
           USEPFUSE = .FALSE.
           CALL READI(I)
@@ -289,6 +295,7 @@ SUBROUTINE READKEY
   ! ----------- fix file names -----------
   CALL REPLACESUBSTR(SNAPFILE,'*',TRIM(ADJUSTL(ARG)))
   CALL REPLACESUBSTR(OUTFILE,'*',TRIM(ADJUSTL(ARG)))
+  CALL REPLACESUBSTR(NFUSEFILE,'*',TRIM(ADJUSTL(ARG)))
   ! ---------------------------
 
   ! Initiate random number generator 

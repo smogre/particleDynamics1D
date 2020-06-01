@@ -57,6 +57,9 @@ CONTAINS
           ! update properties of the fused particle
           PARTP=>PGROUP%PLIST(KEEPIND)
           PARTP%NFUSE = PARTP%NFUSE+1
+          IF(PARTP%NFUSE.GE.PARAMP%MAXNFUSE(PARTP%PTYPE)) THEN
+            PARTP%CANFUSE = .FALSE.
+          END IF
           PARTP%PROTCONV = CONVRATE(PARAMP%PROTCONV(:,:,PARTP%PTYPE),&
                                     PARTP%NFUSE,PARTP%NPROT,PARTP%MAXNFUSE)
           ! PRINT*,'TESTX, FUSION SUCCESSFUL, NFUSE:',PARTP%NFUSE
@@ -147,19 +150,18 @@ CONTAINS
           PHPART=>PARTP2
           LYSOPART=>PARTP1
         END IF
+        PHPART%PROTCONV = CONVRATE(PARAMP%PROTCONV(:,:,PHPART%PTYPE),&
+                                        PHPART%NFUSE,PHPART%NPROT,PHPART%MAXNFUSE)
+        IF(PHPART%NFUSE.GE.PARAMP%MAXNFUSE(PHPART%PTYPE)) THEN
+          PHPART%CANFUSE = .FALSE.
+          CYCLE
+        END IF
         SEP = ABS(PHPART%POS-LYSOPART%POS)
         IF(SEP.LE.TOUCHSEP) THEN
           LYSOPART%CANFUSE = .TRUE.
         ELSEIF(SEP.GT.BUFSEP) THEN
           LYSOPART%CANFUSE = .FALSE.
         END IF
-        PHPART%PROTCONV = CONVRATE(PARAMP%PROTCONV(:,:,PHPART%PTYPE),&
-                                        PHPART%NFUSE,PHPART%NPROT,PHPART%MAXNFUSE)
-        ! PRINT*,'TESTX: ID, SEP, CANFUSE:',LYSOPART%ID,SEP,LYSOPART%CANFUSE                                        
-        ! PRINT*, 'TESTX: Convrate updated:'
-        ! DO I = 1,PHPART%NPROT
-          ! PRINT*,'TESTX, CONVRATE:',PHPART%PROTCONV(:,I)
-        ! END DO
       END DO
     END DO
 

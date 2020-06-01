@@ -65,9 +65,9 @@ MODULE KEYS
   ! ----------------------------------------------------------------------------
   ! input/output
   ! ----------------------------------------------------------------------------
-  CHARACTER*100 :: SNAPFILE, OUTFILE
+  CHARACTER*100 :: SNAPFILE, OUTFILE, NFUSEFILE
   LOGICAL :: DUMPSNAPSHOTS, APPENDSNAPSHOTS
-  INTEGER :: SNAPEVERY, OUTEVERY
+  INTEGER :: SNAPEVERY, OUTEVERY, FUSEDISTEVERY
   
   ! ----------------------------------------------------------------------------
   ! dynamics

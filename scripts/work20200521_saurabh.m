@@ -1,7 +1,7 @@
 %% script to test reading in protein content
 tic
 clear;clc
-fname = '/data/SimData/particledynamics1D/outfiles/nofuse.out';
+fname = '/data/SimData/particledynamics1D/outfiles/test.out';
 
 [tvals,cellprot,axprot,ntrials] = readprot(fname);
 cellprot = cellprot/ntrials;

@@ -28,6 +28,7 @@ nprot = size(cellprot,2);
 dtvals = tvals(2:end)-tvals(1);
 maxconvrate = 5;
 uprot = squeeze(sum(axprot,2))+[zeros(1,nks,nkf);squeeze(protflux(:,1,:,:))]/maxconvrate;
+% uprot = squeeze(sum(axprot,2))+[zeros(1,nks,nkf);squeeze(protflux(:,1,:,:))]/maxconvrate;
 toc
 %% get steady state values
 ssinds = floor(nsave/2):nsave;
@@ -39,34 +40,34 @@ protflux_ss = permute(squeeze(mean(protflux(ssinds-1,:,:,:),1)),[2,1,3]);
 % cmap = jet(nprot);
 dstr = [{'-'},{'--'},{'-.'}];
 cmap = jet(nkf);
-% plotinds = ssinds;
-plotinds = 5000:5100;
+plotinds = ssinds;
+% plotinds = 5000:5100;
 % hold on
 ct = 1;
-for kc = 50%[1,50,100]
-for fc = 2%1:nkf
+% for kc = 50%[1,50,100]
+for fc = 1:nkf
 % 	for nc = 1:nprot
 % 		semilogx(kswitch,cellprot_ss(:,nc),'Color',cmap(nc,:),...
 % 																										'DisplayName',sprintf('Protein type %d',nc))
-% 		semilogx(kswitch,squeeze(axprot_ss(:,nc,fc)),dstr{nc},'Color',cmap(fc,:),...
+% 		semilogx(kswitch,squeeze(cellprot_ss(:,nc,fc)),dstr{nc},'Color',cmap(fc,:),...
 % 																			'DisplayName',sprintf('Protein type %d, kf: %s',nc,kfstr{fc}))
-%			plot(tvals,[0;squeeze(protflux(:,nc,53))],'Color',cmap(nc,:),...
-% 																										'DisplayName',sprintf('Protein type %d',nc))
-			plot(tvals(plotinds),uprot(plotinds,kc,fc),dstr{ct},'Color',cmap(fc,:),...
-															'DisplayName',sprintf('kf: %s, kswitch: %0.3f',kfstr{fc},kswitch(kc)))
-% 		semilogx(kswitch,uprot_ss(:,fc),'Color',cmap(fc,:),...
-% 																			'DisplayName',sprintf('kf: %s',kfstr{fc}))
+% 			semilogx(kswitch,squeeze(protflux_ss(:,nc,fc)),dstr{nc},'Color',cmap(fc,:),...
+% 																			'DisplayName',sprintf('Protein type %d, kf: %s',nc,kfstr{fc}))
+% 			plot(tvals(plotinds),uprot(plotinds,kc,fc),dstr{ct},'Color',cmap(fc,:),...
+% 															'DisplayName',sprintf('kf: %s, kswitch: %0.3f',kfstr{fc},kswitch(kc)))
+		semilogx(kswitch,uprot_ss(:,fc),'Color',cmap(fc,:),...
+																			'DisplayName',sprintf('kf: %s',kfstr{fc}))
 		hold on
 % 		semilogx(kswitch,uprot_ss,'Color',cmap(nc,:),...
 % 																		'DisplayName',sprintf('Protein type %d, kf: %s',nc,kfstr{fc}))
 % 	end
 end
-ct = ct+1;
-end
+% ct = ct+1;
+% end
 plot_cleanup
 legend show
-% xlabel('kswitch')
-xlabel('time')
+xlabel('kswitch')
+% xlabel('time')
 ylabel('total cell protein')
 % title(sprintf('$k_\\mathrm{fuse}$ = 0.1/s, $p1_\\mathrm{mean}$ = %0.3f, $p2_\\mathrm{mean}$ = %0.3f',mean(protflux(51:end,:))))
 hold off

@@ -1,50 +1,65 @@
-% function [tvals,cellprot,axprot,ntrials] = readsnapshot(filename)
+function [grouplist,tvals,domlen,ntrials] = readsnapshot(filename,options)
 % reads out the protein content from filename
-% output format for each timestep: 
+% output format for each timestep:
 % Info line: TIME NTRIALS DOMLEN
 %						|Ntrial blocks: TRIALNUMBER NPART
-%						|							|Npart blocks: pc, ID, type, nprot
+%						|							|Npart blocks: pc, ID, type, nprot, nfuse
 %						|							|							pos, prot
 
-filename = '/data/SimData/particledynamics1D/snapfiles/test.snap.out';
-fid = fopen(filename,'r');
+opt = struct();
+% output progress after how many steps
+opt.progstep = 1;
+% only read a specific particle type
+opt.onlyread = 0;
+% maximum number of particles to read
+opt.maxpart = inf;
 
+if(exist('options','var')); opt = copyStruct(options,opt); end
+
+fid = fopen(filename,'r');
 tvals = [];
-npart = [];
-particles = struct('time',[],'pos',[],'id',[],prot,'[]');
+stepct = 0;
 
 while(~feof(fid))
-
+	stepct = stepct+1;
+	if(~mod(stepct,opt.progstep));  disp(stepct); end
 	initdata = textscan(fid,'%f %f %f',1); % time ntrials domlen
 	tvals = cat(1,tvals,initdata{1});
 	ntrials = initdata{2};
 	domlen = initdata{3};
+	if(~exist('grouplist','var')); grouplist(ntrials,1) = partgroupObj; end
 
 	% start reading all trials for a single time step
 	trc = 1;
-	lastid = -inf(ntrials,1);
 	while(trc<=ntrials)
 		trinfo = textscan(fid,'%f %f',1); % trialnumber npart
-		npart = cat(1,npart,trinfo{2});
-
+		tc = trinfo{1};
+		npart = trinfo{2};
+		grouplist(tc).npart = cat(1,grouplist(tc).npart,npart);
+		
 		% read all particles for a given trial
-		pc = 1;
-		while(pc<=trinfo{2})
-			pinfo = textscan(fid,'%f %f %f %f',1); %pc ID type nprot
-			pid = pinfo{2};
-			fmtstr = strtrim(repmat('%f ',1,pinfo{4}+1));
-			pdata = textscan(fid,fmtstr,1); %pos prot
-			particles(pid).pos = cat(1,particles(pid).pos,pdata{1});
-			if(pinfo{4}~=0)
-				particles(pid).prot = cat(1,particles(pid).prot,pdata{2:end});
-			end
-			pc = pc+1;
+		pdata = textscan(fid,'%f %f %f %f %f',2*npart); %pc ID type nprot nfuse
+																									 %pos prot
+		pidvals = pdata{2}(1:2:end);
+		typevals = pdata{3}(1:2:end);
+		nfusevals = pdata{5}(1:2:end);
+		posvals = pdata{1}(2:2:end);
+		protvals = [pdata{2}(2:2:end),pdata{3}(2:2:end)];
+		
+		for pc = 1:length(pidvals)
+			pid = pidvals(pc);
+			grouplist(tc).particles(pid).id = pid;
+			grouplist(tc).particles(pid).type = typevals(pc);
+			grouplist(tc).particles(pid).time = [grouplist(tc).particles(pid).time;initdata{1}];
+			grouplist(tc).particles(pid).pos = [grouplist(tc).particles(pid).pos;posvals(pc)];
+			grouplist(tc).particles(pid).prot = [grouplist(tc).particles(pid).prot;protvals(pc,:)];
+			grouplist(tc).particles(pid).nfuse = nfusevals(pc);
 		end
 		
 		trc = trc+1;
 	end
 end
-	
+
 fclose(fid);
-% end
+end
 
