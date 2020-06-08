@@ -5,10 +5,10 @@
 ACTION RUNDYNAMICS
 
 # number of steps
-NSTEPS 1D6
+NSTEPS 1D5
 
 # number of trials
-NTRIALS 100
+NTRIALS 1E3
 
 ##############################################
 # particle information
@@ -78,30 +78,30 @@ PROTCONV 1 1 0D0 -0.2D0
 ##############################################
 # fusion parameters
 ##############################################
-DOFUSION T
+DOFUSION F
 
 # buffer length to determine touch
 BUFLEN 0D0
 
 # use constant probability per touch
-USEPFUSE f
+USEPFUSE T
 
 # fusion probability
 # format: i pij
 # where i is the particle type, pij is the probability of fusion between i and j
-#PFUSE 1 0D0 1D0
-#PFUSE 2 1D0 0D0
+PFUSE 1 0D0 1D0
+PFUSE 2 1D0 0D0
 
 # fusion rates
 # matrix of fusion rates between particle types
 # format: i kij
 # where i is the particle type, kij is the fusion rate between particle i and j
 # uncomment following lines to use rate instead of probability
-KFUSE 1 0D0 1D1
-KFUSE 2 1D1 0D0
+# KFUSE 1 0D0 25.4385
+# KFUSE 2 25.4385 0D0
 
 # number of fusion events needed to saturate
-MAXNFUSE 0 10
+#MAXNFUSE 0 10
 
 ##############################################
 # domain information
@@ -129,4 +129,4 @@ SNAPSHOTS 0 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # save distribution of nfuse
 FUSEDIST 100 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
 # print status to console
-PRINTEVERY 1D5
+PRINTEVERY 1D4

@@ -60,7 +60,7 @@ SUBROUTINE READKEY
   ! fusion details
   KFUSE = 0D0 ! matrix of fusion rates
   PFUSE = 0D0 ! matrix of fusion probabilities
-  MAXNFUSE = 1 ! number of fusion events needed for saturation
+  MAXNFUSE = HUGE(1) ! number of fusion events needed for saturation
   DOFUSION = .FALSE.
   USEPFUSE = .FALSE.
 
@@ -234,6 +234,7 @@ SUBROUTINE READKEY
           END DO
         CASE('PRINTEVERY')
           CALL READI(PRINTEVERY)
+          IF(PRINTEVERY.LT.0) PRINTEVERY = NSTEPS/10
         CASE('PROTCONV')
           CALL READI(I)
           CALL READI(J)

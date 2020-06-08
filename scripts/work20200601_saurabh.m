@@ -1,24 +1,79 @@
-%% test distribution of nfuse
+%% test distribution of concentration
 clear;clc
-tic
-filename = '/data/SimData/particledynamics1D/nfusefiles/testnfuse.fuse.out';
-[tvals,fusedist,nreg,regedges,ntrials] = readfusedist(filename);
-toc
+pvals = [0.01,0.1,0.5,1];%[0,1];
+pstr = [{'0pt01'},{'0pt1'},{'0pt5'},{'1'}];%[{'0'},{'1'}];
+cmap = colormapinterp([0,0,1;1,0,0],length(pvals));
+c0 = 1;
+rp = 400;
+rl = 100;
+cfunc = @(n,c0,rp,rl) n*c0./(n+rp^3/rl^3);
 %%
-% for tc = 1:500
-% 	histogram('BinEdges',regedges,'BinCounts',mean(fusedist(1:tc,:),1)./ntrials)
-	histogram('BinEdges',regedges,'BinCounts',mean(fusedist(5000:end,:),1)./ntrials)
-% 	plot(regedges(1:end-1),fusedist(tc,:))
-	ylim([0,0.01])
-	plot_cleanup
-	xlabel('distance')
-	ylabel('time- and ensemble-averaged fusion events')
-	title(sprintf('time: %0.3f',tvals(tc)))
+fusedist = [];
+partdist = [];
+for pc = 1:length(pvals)
+	disp(pc)
+	filename = sprintf('/data/SimData/particledynamics1D/nfusefiles/nfusedist_pf%s.fuse.out',pstr{pc});
+	% 	filename = sprintf('/data/SimData/particledynamics1D/nfusefiles/testnfuse.fuse.out',pstr{pc});
+	[tvals,tmpfusedist,tmppartdist,nreg,regedges,ntrials] = readfusedist(filename);
+	fusedist = cat(4,fusedist,tmpfusedist);
+	partdist = cat(4,partdist,tmppartdist);
+end
+nsave = size(fusedist,1);
+ntype = size(fusedist,3);
+%%
+meanfusedist = fusedist./partdist;
+meanfusedist(isnan(meanfusedist)) = 0;
+cvals = cfunc(meanfusedist,c0,rp,rl);
+%%
+pdensity = squeeze(sum(partdist,2))/10/ntrials;
+%%
+ptype = 1;
+typestr = [{'lyso'},{'phago'}];
+figure
+ssinds = nsave;
+ct = 1;
+for pc = 1:length(pvals)
+	disp(pc)
+
+% 	meancvals = smooth(mean(cvals(ssinds,:,2,pc),1),11);
+% 	semvals = std(cvals(ssinds,:),1)./sqrt(length(ssinds));
+% 	curve1 = meancvals+semvals;
+% 	curve2 = meancvals-semvals;
+% 	x2 = [regedges(1:end-1),fliplr(regedges(1:end-1))];
+% 	inBetween = [curve1,fliplr(curve2)];
+% 	plot(regedges(1:end-1),meancvals,'Color',cmap(pc,:),'DisplayName',...
+% 																									sprintf('fusion probability: %0.3f',pvals(pc)))
+% 	stdshade(cvals(ssinds,:),0.4,regedges(1:end-1))
+% 	hold on
+% 	fill(x2,inBetween,cmap(pc,:),'FaceAlpha',0.4,'linestyle','none','DisplayName',...
+%																							sprintf('SEM, fusion probability: %0.3f',pvals(pc)))
+	
+	plot(regedges(1:end-1),mean(partdist(ssinds,:,ptype),1)./ntrials,'DisplayName',...
+																																sprintf('pfuse: %0.3f',pvals(pc)))
+	
+	hold on
+end
+% 	ylim([0,0.001])
+hold off
+plot_cleanup
+xlabel('distance')
+% ylabel('time- and ensemble-averaged fusion events')
+ylabel('relative autophagosome acidification')
+% ylabel('number of autophagosomes')
+%  	title(sprintf('time: %0.3f',tvals(tc)))
+% 	title(sprintf('pfuse: %0.3f',pfuse))
 % 	drawnow
 % 	M(tc) = getframe(gcf)
 % 	pause(0.01)
 % end
+legend show
 %%
-animation2movie(M,'nfusedist.avi',24)
+% animation2movie(M,'nfusedist.avi',24)
+%%
+hold on
+meantouch = 5.1;
+for pc = 1:pvals
+	
+end
 
 

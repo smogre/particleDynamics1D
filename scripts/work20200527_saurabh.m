@@ -21,3 +21,9 @@ colorbar('TickLabelInterpreter','latex')
 semilogx(kvals,fluxout(:,end))
 plot_cleanup
 xlim([min(kvals),max(kvals)])
+%%
+xvals = linspace(0,1e1,1e3);
+plot(xvals,lognpdf(xvals))
+plot_cleanup
+xlabel('time since start of quarantine')
+ylabel('time spent playing poker/ludo/skribbl')
