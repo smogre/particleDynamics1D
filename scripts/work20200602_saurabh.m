@@ -1,7 +1,8 @@
 %% test particle distribution
 clear;clc
-pvals = [0,1];[0.01,0.1,0.5,1];
-pstr = [{'0'},{'1'}];[{'0pt01'},{'0pt1'},{'0pt5'},{'1'}];
+pvals = [0,0.01,0.1,0.5,1];%[0,1];
+pstr = [{'0'},{'0pt01'},{'0pt1'},{'0pt5'},{'1'}];%[{'0'},{'1'}];
+L = 100;
 %%
 fusedist = [];
 partdist = [];
@@ -15,11 +16,11 @@ for pc = 1:length(pvals)
 end
 nsave = size(fusedist,1);
 ntype = size(fusedist,3);
-pdensity = squeeze(sum(partdist,2))/10/ntrials;
+pdensity = squeeze(sum(partdist,2))/L/ntrials;
 %% plot particle distribution
 ptype = 1;
 typestr = [{'lyso'},{'phago'}];
-figure
+% figure
 ssinds = nsave;
 cmap = [0,0,1;1,0,0];
 fc = 1;
@@ -27,15 +28,15 @@ fc = 1;
 	ct = 1;
 	for pc = 1:length(pvals)
 % 		disp(pc)
-% 	subplot(2,2,ct)
-		subplot(2,2,ct)
+	subplot(2,3,ct)
+% 		subplot(2,2,ct)
 		for ptype = 1:ntype
 			
 		meanpartdist = smooth(mean(partdist(ssinds,:,ptype,pc),1)./ntrials,11);
 % 			meanpartdist = smooth(mean(partdist(tc,:,ptype,pc),1)./ntrials,11);
 % 		plot(regedges(1:end-1),meanpartdist,'Color',cmap(ptype,:),'DisplayName',...
 			plot(regedges(1:end-1),meanpartdist,'Color',cmap(ptype,:),'DisplayName',...
-				sprintf('%s, density: %0.3f/$\\mu$m',typestr{ptype},mean(pdensity(ssinds,ptype,pc))))
+				sprintf('%s: %0.3f/$\\mu$m',typestr{ptype},mean(pdensity(ssinds,ptype,pc))))
 % 			sprintf('pfuse: %0.3f, particle density: %0.3f',pvals(pc),mean(pdensity(ssinds,ptype,pc))))
 % 	histogram('BinEdges',regedges,'BinCounts',mean(partdist(ssinds,:,ptype,pc),1)./ntrials)
 			plot_cleanup
@@ -49,8 +50,8 @@ fc = 1;
 % 			ylabel('number of autophagosomes')
 % 		end
 			ylabel('number of organelles')
-			ylim([0,0.02])
-			yticks([0,0.01,0.02])
+			ylim([0,0.08])
+% 			yticks([0,0.01,0.02])
 			title(sprintf('fusion probability: %0.2f',pvals(pc)))
 		lgd = legend;
 % 		lgd.Location = 'EastOutside';

@@ -5,10 +5,10 @@
 ACTION RUNDYNAMICS
 
 # number of steps
-NSTEPS 1D5
+NSTEPS 1D6
 
 # number of trials
-NTRIALS 1E3
+NTRIALS 1E4
 
 ##############################################
 # particle information
@@ -40,7 +40,7 @@ KREV 0D0 0D0
 # Using AP radius: 400nm
 # Using lyso radius: 100nm-200nm
 # domain length: 10um = 1 length unit
-PRAD 0.01D0  0.04D0
+PRAD 1D-3  4D-3
 
 # particle velocities
 # Autophagosome velocity (type 2) sets units of time(0.75um/s)
@@ -51,7 +51,10 @@ VEL 2.67D0 1D0
 DIFFCONST 0D0
 
 # production rate
-KPROD 1.79D0 0.16D0
+# rate for 10um domain
+#KPROD 1.79D0 0.16D0
+# rate for 100um domain
+KPROD 17.9D0 1.6D0
 #KPROD 0D0 0D0
 
 
