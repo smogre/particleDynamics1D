@@ -8,7 +8,7 @@ ACTION RUNDYNAMICS
 NSTEPS 1D6
 
 # number of trials
-NTRIALS 1E4
+NTRIALS 1E3
 
 ##############################################
 # particle information
@@ -125,7 +125,7 @@ REGPOS -1D0
 # simulation info
 ##############################################
 # time step
-DELT 1D-3
+DELT 1D-4
 # where to save output file
 OUTPUT 0 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots

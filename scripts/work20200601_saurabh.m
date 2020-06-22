@@ -56,8 +56,8 @@ for pc = 1:length(pvals)
 % 																																sprintf('pfuse: %0.3f',pvals(pc)))
 	
 	hold on
-% 	plot(regedges(1:end-1),afunc_th(c0,gamvals(pc),betvals(pc),regedges(1:end-1)),'--',...
-% 			'Color',cmap(pc,:));
+	plot(regedges(1:end-1),afunc_th(c0,gamvals(pc),betvals(pc),regedges(1:end-1)),'--',...
+			'Color',cmap(pc,:));
 end
 % 	ylim([0,0.001])
 hold off

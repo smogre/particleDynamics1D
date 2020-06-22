@@ -8,6 +8,7 @@ CONTAINS
   ! subroutine to implement fusion of particles
     USE PARTICLEUTILS, ONLY: PARTICLEGROUP,PARTICLE,PARTICLEPARAMS,&
                              REMOVEPARTICLE
+    USE KEYS, ONLY: USEPFUSE                             
     
     IMPLICIT NONE
     TYPE(PARTICLEGROUP), POINTER :: PGROUP
@@ -62,10 +63,7 @@ CONTAINS
           END IF
           PARTP%PROTCONV = CONVRATE(PARAMP%PROTCONV(:,:,PARTP%PTYPE),&
                                     PARTP%NFUSE,PARTP%NPROT,PARTP%MAXNFUSE)
-          ! PRINT*,'TESTX, FUSION SUCCESSFUL, NFUSE:',PARTP%NFUSE
-          ! DO I = 1,PARTP%NPROT
-            ! PRINT*,'TESTX, CONVRATE:',PARTP%PROTCONV(I,:)
-          ! END DO
+
           ! remove unused particle                                    
           CALL REMOVEPARTICLE(PGROUP,DELIND)
           IF(DELIND.EQ.PC1) THEN
@@ -121,7 +119,7 @@ CONTAINS
 
   SUBROUTINE UPDATEFUSESTATE(PGROUP,PARAMP)
   ! updates the fusion state of particles in the group
-    USE KEYS, ONLY: BUFLEN
+    USE KEYS, ONLY: BUFLEN,USEPFUSE
     USE PARTICLEUTILS, ONLY: PARTICLEGROUP,PARTICLEPARAMS,PARTICLE 
     IMPLICIT NONE
 
@@ -158,9 +156,16 @@ CONTAINS
         END IF
         SEP = ABS(PHPART%POS-LYSOPART%POS)
         IF(SEP.LE.TOUCHSEP) THEN
-          LYSOPART%CANFUSE = .TRUE.
+          IF(.NOT.LYSOPART%INTERACTING) THEN  
+            PHPART%NTOUCH = PHPART%NTOUCH+1
+            LYSOPART%INTERACTING = .TRUE.
+            LYSOPART%CANFUSE = .TRUE.
+          ELSE
+            LYSOPART%CANFUSE = .FALSE.
+          END IF
         ELSEIF(SEP.GT.BUFSEP) THEN
           LYSOPART%CANFUSE = .FALSE.
+          LYSOPART%INTERACTING = .FALSE.
         END IF
       END DO
     END DO

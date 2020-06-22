@@ -103,8 +103,10 @@ CONTAINS
 
           ! delete particles that move out of bounds
           IF((PARTP%POS.GT.DOMP%DOMLEN).OR.(PARTP%POS.LT.0D0)) THEN
-            IF(PARTP%POS.LT.0D0.AND.PARTP%NPROT.GT.0.AND.OUTEVERY.GT.0) THEN
-              CELLPROT(1:PARTP%NPROT) = CELLPROT(1:PARTP%NPROT)+PARTP%PROT
+            IF(PARTP%POS.LT.0D0.) THEN
+              IF(PARTP%NPROT.GT.0.AND.OUTEVERY.GT.0) THEN
+                CELLPROT(1:PARTP%NPROT) = CELLPROT(1:PARTP%NPROT)+PARTP%PROT
+              END IF
             END IF
             CALL REMOVEPARTICLE(PGROUP,PC)
             CYCLE

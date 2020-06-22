@@ -35,6 +35,9 @@ MODULE PARTICLEUTILS
     ! can the particle fuse?
     LOGICAL :: CANFUSE
 
+    ! is particle currently interacting?
+    LOGICAL :: INTERACTING
+
     ! number of fusion events
     INTEGER :: NFUSE
 
@@ -339,6 +342,7 @@ CONTAINS
     END IF
     PARTP%NFUSE = 0
     PARTP%NTOUCH = 0
+    PARTP%INTERACTING = .FALSE.
 
     NTYPE = PARAMP%NTYPE
     PARTP%NFUSETYPE = NTYPE
@@ -420,6 +424,7 @@ CONTAINS
 
   
     PARTP%CANFUSE = .FALSE.
+    PARTP%INTERACTING = .FALSE.
     PARTP%NFUSE = 0
     PARTP%NTOUCH = 0
     PARTP%NFUSETYPE = 0
