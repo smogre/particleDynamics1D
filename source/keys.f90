@@ -65,8 +65,8 @@ MODULE KEYS
   ! ----------------------------------------------------------------------------
   ! input/output
   ! ----------------------------------------------------------------------------
-  CHARACTER*100 :: SNAPFILE, OUTFILE, NFUSEFILE
-  LOGICAL :: DUMPSNAPSHOTS, APPENDSNAPSHOTS
+  CHARACTER*100 :: SNAPFILE, OUTFILE, NFUSEFILE,NTOUCHFILE
+  LOGICAL :: DUMPSNAPSHOTS, APPENDSNAPSHOTS,CALCNTOUCH
   INTEGER :: SNAPEVERY, OUTEVERY, FUSEDISTEVERY
   
   ! ----------------------------------------------------------------------------
