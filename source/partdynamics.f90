@@ -90,10 +90,15 @@ CONTAINS
 
         ! check for fusion
         IF(DOFUSION) THEN
-          CALL UPDATEFUSESTATE(PGROUP,PARAMP)
+!          CALL UPDATEFUSESTATE(PGROUP,PARAMP)
           CALL FUSEPARTICLES(PGROUP,PARAMP)
         END IF
 
+         ! DO PC = 1,4!SUM(PGROUP%NPART)
+         !    PRINT*, 'Particle info:', TC, PC, PGROUP%PLIST(PC)%ID, &
+         !         & PGROUP%PLIST(PC)%PTYPE, pgroup%plist(pc)%pos, pgroup%plist(pc)%canfuse
+         ! END DO
+        
         ! move particles, change direction, and delete out of bounds
         PC = 1
         NPROC = 0

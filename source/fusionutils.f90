@@ -99,6 +99,7 @@ CONTAINS
     PTYPE1 = PARTP1%PTYPE
     POS2 = PARTP2%POS
     PTYPE2 = PARTP2%PTYPE
+    
     SEP = ABS(POS1-POS2)
 
     ! check if particle types match
@@ -118,8 +119,9 @@ CONTAINS
 
   END SUBROUTINE CHECKFUSION
 
-  SUBROUTINE UPDATEFUSESTATE(PGROUP,PARAMP)
-  ! updates the fusion state of particles in the group
+  SUBROUTINE UPDATEFUSESTATE(PGROUP,PARAMP)    
+    ! updates the fusion state of particles in the group
+    ! updates protein conversion parameters?
     USE KEYS, ONLY: BUFLEN,USEPFUSE
     USE PARTICLEUTILS, ONLY: PARTICLEGROUP,PARTICLEPARAMS,PARTICLE 
     IMPLICIT NONE
@@ -131,6 +133,9 @@ CONTAINS
     DOUBLE PRECISION :: TOUCHSEP,BUFSEP,SEP
     INTEGER :: PC1,PC2,PTYPE1,PTYPE2,I
 
+    print*, 'THIS SUBROUTINE IS BOTH BROKEN AND REDUNDANT. DO NOT USE!'
+    STOP 1
+    
     TOUCHSEP = SUM(PARAMP%PRAD(1:PARAMP%NTYPE))
     BUFSEP = TOUCHSEP+BUFLEN
 
@@ -157,11 +162,11 @@ CONTAINS
         END IF
         SEP = ABS(PHPART%POS-LYSOPART%POS)
         IF(SEP.LE.TOUCHSEP) THEN
-          LYSOPART%CANFUSE = .TRUE.
-          IF(.NOT.LYSOPART%INTERACTING) THEN  
+          LYSOPART%CANFUSE = .TRUE. ! lysosome is close enough to a phagosome
+          IF(.NOT.LYSOPART%INTERACTING) THEN  ! was not previously interacting
             PHPART%NTOUCH = PHPART%NTOUCH+1
-            LYSOPART%INTERACTING = .TRUE.
-          ELSEIF(USEPFUSE) THEN
+            LYSOPART%INTERACTING = .TRUE. ! lysosome is now interacting
+          ELSEIF(USEPFUSE) THEN 
             LYSOPART%CANFUSE = .FALSE.
           END IF
         ELSEIF(SEP.GT.BUFSEP) THEN
