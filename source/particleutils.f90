@@ -35,8 +35,11 @@ MODULE PARTICLEUTILS
     ! can the particle fuse?
     LOGICAL :: CANFUSE
 
-    ! is particle currently interacting?
-    LOGICAL :: INTERACTING
+    ! list of particles currently interacting with this particle
+    INTEGER,POINTER :: INTERACTING(:)
+
+    ! current number of interactions
+    INTEGER :: NINT
 
     ! number of fusion events
     INTEGER :: NFUSE
@@ -51,7 +54,7 @@ MODULE PARTICLEUTILS
     INTEGER :: NTOUCH
     
     ! rate of fusion
-    DOUBLE PRECISION, POINTER :: KFUSE(:)
+    DOUBLE PRECISION,POINTER :: KFUSE(:)
 
     ! probability of fusion per contact
     DOUBLE PRECISION,POINTER :: PFUSE(:)
@@ -321,6 +324,7 @@ CONTAINS
   SUBROUTINE MAKEPARTICLE(PARTP,PARTID,PTYPE,PARAMP,CANFUSE,CURREG,STARTUNIF)
   ! make a new particle and assign parameters
     USE MT19937, ONLY: GRND
+    USE KEYS,ONLY: MAXNPART
     IMPLICIT NONE
 
     TYPE(PARTICLE), POINTER :: PARTP
@@ -364,7 +368,9 @@ CONTAINS
     END IF
     PARTP%NFUSE = 0
     PARTP%NTOUCH = 0
-    PARTP%INTERACTING = .FALSE.
+    ALLOCATE(PARTP%INTERACTING(MAXNPART))
+    PARTP%INTERACTING = 0
+    PARTP%NINT = 0
 
     NTYPE = PARAMP%NTYPE
     PARTP%NFUSETYPE = NTYPE
@@ -446,7 +452,8 @@ CONTAINS
 
   
     PARTP%CANFUSE = .FALSE.
-    PARTP%INTERACTING = .FALSE.
+    DEALLOCATE(PARTP%INTERACTING)
+    PARTP%NINT = 0
     PARTP%NFUSE = 0
     PARTP%NTOUCH = 0
     PARTP%NFUSETYPE = 0

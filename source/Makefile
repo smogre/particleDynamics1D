@@ -8,32 +8,50 @@ LIBS =  -lblas -llapack
 OSGFLAGS = -static
 OSGLIBS =  -lblas -llapack -lgfortran -lm
 
+# define directories
+PDIR = ./profile
+ODIR = .
+
 # executable name
 EXE = ../partdynamics1D.exe
 OSGEXE=../partdynamics1D_osg.exe
 TESTEXE = ../testrun.exe
+PROFEXE = ../partdynamics1D_prof.exe
 
 .SUFFIXES: .o .f90 
 
 # general suffix rules
 
-%.o: tools/%.f90
-	$(FC) $(FLAGS) $(DEBUGFLAGS) -c $<
+$(PDIR)/%.o : tools/%.f90
+	mkdir -p $(@D)
+	$(FC) $(FLAGS) $(DEBUGFLAGS) -pg -c -o $@ $<
 
-%.o: %.f90 
-	$(FC) $(FLAGS) $(DEBUGFLAGS) -c $<
+$(ODIR)/%.o : tools/%.f90
+	mkdir -p $(@D)
+	$(FC) $(FLAGS) $(DEBUGFLAGS) -c -o $@ $<
 
-default: $(OBJS) main.o
-	$(FC) $(FLAGS) $(DEBUGFLAGS) $(OBJS) main.o -o $(EXE) $(LIBS)
+$(PDIR)/%.o : %.f90
+	mkdir -p $(@D)
+	$(FC) $(FLAGS) $(DEBUGFLAGS) -pg -c -o $@ $<
+
+$(ODIR)/%.o : %.f90
+	mkdir -p $(@D)
+	$(FC) $(FLAGS) $(DEBUGFLAGS) -c -o $@ $<
+
+default: $(addprefix $(ODIR)/,$(OBJS) main.o) # recipe for ODIR/OBJS
+	$(FC) $(FLAGS) $(DEBUGFLAGS) $^ -o $(EXE) $(LIBS)
+
+profile: $(addprefix $(PDIR)/,$(OBJS) main.o) # recipe for PDIR/OBJS
+	$(FC) $(FLAGS) $(DEBUGFLAGS) -pg $^ -o $(PROFEXE) $(LIBS)
 
 osg: $(OBJS) main.o
 	$(FC) $(FLAGS) $(OSGFLAGS) $(DEBUGFLAGS) $(OBJS) main.o -o $(OSGEXE) $(OSGLIBS)
 
-test: $(TESTOBJS) testmain.o
-	$(FC) $(FLAGS) $(DEBUGFLAGS) $(TESTOBJS) testmain.o -o $(TESTEXE) $(LIBS)
+test: $(OBJS) testmain.o
+	$(FC) $(FLAGS) $(DEBUGFLAGS) $(OBJS) testmain.o -o $(TESTEXE) $(LIBS)
 
 clean: 
-	rm *.o *.mod
+	rm *.o *.mod $(ODIR)/*.o $(ODIR)/*.mod $(PDIR)/*.o $(PDIR)/*.mod
 
 veryclean: clean
 	rm *~ $(EXE)
@@ -42,8 +60,14 @@ veryclean: clean
 # ------------
 # individual file dependencies
 # ------------
-readkey.o: inputparams.o keys.o genutil.o
-genutil.o: mt19937.o 
-partdynamics.o: keys.o mt19937.o particleutils.o fusionutils.o
-fusionutils.o: keys.o mt19937.o particleutils.o
-particleutils.o: keys.o genutil.o mt19937.o
+$(ODIR)/readkey.o: $(addprefix $(ODIR)/,inputparams.o keys.o genutil.o)
+$(ODIR)/genutil.o: $(addprefix $(ODIR)/,mt19937.o)
+$(ODIR)/partdynamics.o: $(addprefix $(ODIR)/,keys.o mt19937.o particleutils.o fusionutils.o)
+$(ODIR)/fusionutils.o: $(addprefix $(ODIR)/,keys.o mt19937.o particleutils.o)
+$(ODIR)/particleutils.o: $(addprefix $(ODIR)/,keys.o genutil.o mt19937.o)
+
+$(PDIR)/readkey.o: $(addprefix $(ODIR)/,inputparams.o keys.o genutil.o)
+$(PDIR)/genutil.o: $(addprefix $(ODIR)/,mt19937.o)
+$(PDIR)/partdynamics.o: $(addprefix $(ODIR)/,keys.o mt19937.o particleutils.o fusionutils.o)
+$(PDIR)/fusionutils.o: $(addprefix $(ODIR)/,keys.o mt19937.o particleutils.o)
+$(PDIR)/particleutils.o: $(addprefix $(ODIR)/,keys.o genutil.o mt19937.o)

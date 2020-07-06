@@ -88,13 +88,13 @@ DOFUSION T
 BUFLEN 0D0
 
 # use constant probability per touch
-USEPFUSE F
+USEPFUSE T
 
 # fusion probability
 # format: i pij
 # where i is the particle type, pij is the probability of fusion between i and j
-PFUSE 1 0D0 1D0
-PFUSE 2 1D0 0D0
+PFUSE 1 0D0 1D-1
+PFUSE 2 1D-1 0D0
 
 # fusion rates
 # matrix of fusion rates between particle types
