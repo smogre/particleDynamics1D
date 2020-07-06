@@ -80,8 +80,10 @@ SUBROUTINE READKEY
   SNAPFILE = '*.snap.out' ! snapshot file
   OUTFILE = '*.out' ! output file
   NFUSEFILE = '*.fuse.out' ! file to write spatial distribution of fusion events
+  NTOUCHFILE = '*.touch.out' ! file to write number of touches
   DUMPSNAPSHOTS = .FALSE. ! periodically dump snapshots
   APPENDSNAPSHOTS = .FALSE. ! append snapshots to file rather than replacing
+  CALCNTOUCH = .FALSE. ! calculate number of touches
   SNAPEVERY = 0 ! how often to dump snapshots
   OUTEVERY = 0 ! how often to write to output file
   FUSEDISTEVERY = 0 !how often to write distribution of fusion events
@@ -163,7 +165,6 @@ SUBROUTINE READKEY
           IF (NITEMS.GT.2) CALL READA(NFUSEFILE)
           ! IF (NITEMS.GT.3) CALL READO(APPENDSNAPSHOTS)
         CASE('KFUSE')
-          USEPFUSE = .FALSE.
           CALL READI(I)
           DO J = 1,MIN(MAXNTYPE,NITEMS-2)
             CALL READF(KFUSE(I,J))
@@ -208,6 +209,9 @@ SUBROUTINE READKEY
           CALL READI(NREG)
         CASE('NSTEPS')
           CALL READI(NSTEPS)
+        CASE('NTOUCHFILE')
+          CALCNTOUCH = .TRUE.
+          CALL READA(NTOUCHFILE)
         CASE('NTRIALS')
           CALL READI(NTRIALS)
         CASE('NTYPE')
@@ -297,6 +301,7 @@ SUBROUTINE READKEY
   CALL REPLACESUBSTR(SNAPFILE,'*',TRIM(ADJUSTL(ARG)))
   CALL REPLACESUBSTR(OUTFILE,'*',TRIM(ADJUSTL(ARG)))
   CALL REPLACESUBSTR(NFUSEFILE,'*',TRIM(ADJUSTL(ARG)))
+  CALL REPLACESUBSTR(NTOUCHFILE,'*',TRIM(ADJUSTL(ARG)))
   ! ---------------------------
 
   ! Initiate random number generator 
