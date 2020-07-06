@@ -1,7 +1,7 @@
 %% test distribution of concentration
 clear;clc
-pvals = [0.01,0.1,0.5];[0,0.01,0.1,0.5,1];%[0,1];
-pstr = [{'0pt01'},{'0pt1'},{'0pt5'}];%[{'0'},{'1'}];
+pvals = [0,0.01,0.1,0.5,1];%[0,1];
+pstr = [{'0'},{'0pt01'},{'0pt1'},{'0pt5'},{'1'}];%[{'0'},{'1'}];
 cmap = colormapinterp([0,0,1;1,0,0],length(pvals));
 %%
 c0 = 1;

@@ -81,6 +81,7 @@ PROGRAM MAIN
           DO CC = 1,NPART(NC)
             PARTP=>PLIST(PID)
             CALL MAKEPARTICLE(PARTP,PID,NC,PARAMP,CANFUSE=.TRUE.)
+            
             PID = PID+1
             IF(PID.GE.PARAMP%MAXNPART) THEN
               PRINT*, 'ERROR: too many particles'

@@ -1,0 +1,136 @@
+# parameter file for simulating 1D particle dynamics
+# refer to README.pdf for more information on keywords
+
+# what action to perform
+ACTION RUNDYNAMICS
+
+# number of steps
+NSTEPS 1D4
+
+# number of trials
+NTRIALS 1
+
+##############################################
+# particle information
+##############################################
+
+# number of particle types
+# (1 = lysosome, 2 = autophagosome)
+# higher particle type retains identity after fusion
+NTYPE 2
+
+# initial number of particles of each type
+NPART 1 1
+
+# starting position for particle types
+# negative values => start uniformly in domain
+STARTPOS 0D0 1D0
+
+# initial state of particles
+STARTSTATE 1 -1
+
+# reversal rate
+KREV 0D0 0D0
+
+# stopping rate
+# KSTOP 0D0 0D0
+
+# particle radii
+# can add more values if each particle type has a different radius
+# Using AP radius: 400nm
+# Using lyso radius: 100nm-200nm
+# domain length: 10um = 1 length unit
+PRAD 1D-3  4D-3
+
+# particle velocities
+# Autophagosome velocity (type 2) sets units of time(0.75um/s)
+#VEL 2.67D0 1D0
+VEL 1D0 1D0
+
+# particle diffusion coefficients
+DIFFCONST 0D0
+
+# production rate
+# rate for 10um domain
+#KPROD 1.79D0 0.16D0
+# rate for 100um domain
+#KPROD 17.9D0 1.6D0
+KPROD 0D0 0D0
+
+
+##############################################
+# protein information
+##############################################
+# number of protein types
+# default 2: non-degraded, degraded
+# protein 1: non-degraded, protein 2: degraded
+NPROT 0 2
+
+# initial protein content
+# format: i kij
+# where i is the particle type, kij is the initial content of protein j in i
+STARTPROT 1 0D0 0D0
+STARTPROT 2 1D0 0D0
+
+# protein conversion rates
+# format: i j k_ijk
+# where i,j are protein types,
+# k_ijk is the rate of conversion of prot j to i in particle type k
+PROTCONV 2 1 0D0 0.2D0
+PROTCONV 1 1 0D0 -0.2D0
+
+##############################################
+# fusion parameters
+##############################################
+DOFUSION T
+
+# buffer length to determine touch
+BUFLEN 0D0
+
+# use constant probability per touch
+USEPFUSE T
+
+# fusion probability
+# format: i pij
+# where i is the particle type, pij is the probability of fusion between i and j
+PFUSE 1 0D0 1D0
+PFUSE 2 1D0 0D0
+
+# fusion rates
+# matrix of fusion rates between particle types
+# format: i kij
+# where i is the particle type, kij is the fusion rate between particle i and j
+# uncomment following lines to use rate instead of probability
+# KFUSE 1 0D0 25.4385
+# KFUSE 2 25.4385 0D0
+
+# number of fusion events needed to saturate
+#MAXNFUSE 0 10
+
+##############################################
+# domain information
+##############################################
+# domain length
+# Domain length sets units of length (Assuming a domain of 10um)
+DOMLEN 1D0
+
+# number of regions
+NREG 100
+
+# region positions
+# negative value distributes regions uniformly
+REGPOS -1D0
+
+##############################################
+# simulation info
+##############################################
+# time step
+DELT 1D-3
+# where to save output file
+OUTPUT 0 /data/SimData/particledynamics1D/outfiles/*.out
+# where to save snapshots
+SNAPSHOTS 1 /data/SimData/particledynamics1D/snapfiles/*.snap.out
+# save distribution of nfuse
+FUSEDIST 1 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
+# print status to console
+PRINTEVERY -1
