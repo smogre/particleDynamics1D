@@ -1,7 +1,7 @@
 %% test distribution of concentration
 clear;clc
-pvals = [0,0.01,0.1,0.5,1];%[0,1];
-pstr = [{'0'},{'0pt01'},{'0pt1'},{'0pt5'},{'1'}];%[{'0'},{'1'}];
+pvals = [0,0.25,0.5,0.75,1];%[0,1];
+pstr = [{'0'},{'0pt25'},{'0pt50'},{'0pt75'},{'1'}];%[{'0'},{'1'}];
 cmap = colormapinterp([0,0,1;1,0,0],length(pvals));
 %%
 c0 = 1;
@@ -22,7 +22,8 @@ end
 nsave = size(fusedist,1);
 ntype = size(fusedist,3);
 %%
-meanfusedist = fusedist./partdist;
+% meanfusedist = fusedist./partdist;
+meanfusedist = fusedist;
 meanfusedist(isnan(meanfusedist)) = 0;
 cvals = cfunc(meanfusedist,c0,rp,rl);
 %%
@@ -36,10 +37,10 @@ typestr = [{'lyso'},{'phago'}];
 figure
 ssinds = nsave;
 ct = 1;
-for pc = 1:length(pvals)
+for pc = 2:length(pvals)-1
 	disp(pc)
 
-	meancvals = smooth(mean(cvals(ssinds,:,2,pc),1),11);
+	meancvals = mean(cvals(ssinds,:,2,pc),1);
 % 	semvals = std(cvals(ssinds,:),1)./sqrt(length(ssinds));
 % 	curve1 = meancvals+semvals;
 % 	curve2 = meancvals-semvals;
@@ -95,9 +96,9 @@ T = 2*(rp+ry)/(vp+vy);
 % fusion rates
 kfvals = -log(1-pvals)/T;
 % lyso production rate
-kpy = 17.9;
+kpy = 17.9*100;
 % phago production rate
-kpp = 1.6;
+kpp = 1.6*100;
 % encounter length
 ell = (rp+ry);
 % lyso acidification

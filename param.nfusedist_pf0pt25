@@ -5,7 +5,7 @@
 ACTION RUNDYNAMICS
 
 # number of steps
-NSTEPS 1D6
+NSTEPS 1D4
 
 # number of trials
 NTRIALS 1E3
@@ -56,6 +56,8 @@ DIFFCONST 0D0
 # rate for 100um domain
 KPROD 17.9D0 1.6D0
 #KPROD 0D0 0D0
+# boosted rate
+#KPROD 17.9D2 1.6D2
 
 
 ##############################################
@@ -93,16 +95,15 @@ USEPFUSE T
 # fusion probability
 # format: i pij
 # where i is the particle type, pij is the probability of fusion between i and j
-PFUSE 1 0D0 1D-2
-PFUSE 2 1D-2 0D0
+PFUSE 1 0D0 0.25D0
+PFUSE 2 0.25D0 0D0
 
 # fusion rates
 # matrix of fusion rates between particle types
 # format: i kij
 # where i is the particle type, kij is the fusion rate between particle i and j
-# uncomment following lines to use rate instead of probability
-KFUSE 1 0D0 3.7D0
-KFUSE 2 3.7D0 0D0
+#KFUSE 1 0D0 38.7D0
+#KFUSE 2 38.7D0 0D0
 
 # number of fusion events needed to saturate
 #MAXNFUSE 0 10
@@ -115,7 +116,7 @@ KFUSE 2 3.7D0 0D0
 DOMLEN 1D0
 
 # number of regions
-NREG 100
+NREG 1000
 
 # region positions
 # negative value distributes regions uniformly
@@ -125,12 +126,12 @@ REGPOS -1D0
 # simulation info
 ##############################################
 # time step
-DELT 1D-4
+DELT 1D-3
 # where to save output file
 OUTPUT 0 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots
 SNAPSHOTS 0 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # save distribution of nfuse
-FUSEDIST 100 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
+FUSEDIST 10 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
 # print status to console
 PRINTEVERY -1

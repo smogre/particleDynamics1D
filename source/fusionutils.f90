@@ -123,7 +123,7 @@ CONTAINS
     
     ! set flag if fusion is successful
     IF(GRND().LE.PF) CHECKFUSE = .TRUE.
-    IF(.NOT.CHECKFUSE) THEN
+    IF(.NOT.CHECKFUSE.AND.PF.EQ.1D0) THEN
       PRINT*, 'UNSUCCESSFUL FUSION BETWEEN ID1,ID2,TYPE1,TYPE2:',&
                                     PARTP1%ID,PARTP2%ID,PARTP1%PTYPE,PARTP2%PTYPE
       STOP 1                                    
