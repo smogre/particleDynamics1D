@@ -5,7 +5,7 @@
 ACTION RUNDYNAMICS
 
 # number of steps
-NSTEPS 1D4
+NSTEPS 2D3
 
 # number of trials
 NTRIALS 1E3
@@ -54,10 +54,10 @@ DIFFCONST 0D0
 # rate for 10um domain
 #KPROD 1.79D0 0.16D0
 # rate for 100um domain
-KPROD 17.9D0 1.6D0
+#KPROD 17.9D0 1.6D0
 #KPROD 0D0 0D0
 # boosted rate
-#KPROD 17.9D2 1.6D2
+KPROD 17.9D2 1.6D2
 
 
 ##############################################
@@ -116,7 +116,7 @@ PFUSE 2 0.25D0 0D0
 DOMLEN 1D0
 
 # number of regions
-NREG 1000
+NREG 370
 
 # region positions
 # negative value distributes regions uniformly
@@ -130,8 +130,8 @@ DELT 1D-3
 # where to save output file
 OUTPUT 0 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots
-SNAPSHOTS 0 /data/SimData/particledynamics1D/snapfiles/*.snap.out
+SNAPSHOTS 2E3 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # save distribution of nfuse
-FUSEDIST 10 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
+FUSEDIST 0 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
 # print status to console
 PRINTEVERY -1

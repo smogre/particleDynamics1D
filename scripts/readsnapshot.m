@@ -8,11 +8,13 @@ function [grouplist,tvals,domlen,ntrials] = readsnapshot(filename,options)
 
 opt = struct();
 % output progress after how many steps
-opt.progstep = 1;
+opt.progstep = 0;
 % only read a specific particle type
 opt.onlyread = 0;
 % maximum number of particles to read
 opt.maxpart = inf;
+% read single snapshot?
+opt.readsinglesnap = 0;
 
 if(exist('options','var')); opt = copyStruct(options,opt); end
 
@@ -21,12 +23,13 @@ tvals = [];
 stepct = 0;
 
 while(~feof(fid))
+	initdata = textscan(fid,'%f %f %f',1); % time ntrials domlen
+	if(isempty(initdata{1})); return; end
 	stepct = stepct+1;
 	if(~mod(stepct,opt.progstep));  disp(stepct); end
-	initdata = textscan(fid,'%f %f %f',1); % time ntrials domlen
 	tvals = cat(1,tvals,initdata{1});
-	ntrials = initdata{2};
-	domlen = initdata{3};
+	if(~exist('ntrials','var')); ntrials = initdata{2}; end
+	if(~exist('domlen','var')); domlen = initdata{3}; end
 	if(~exist('grouplist','var')); grouplist(ntrials,1) = partgroupObj; end
 
 	% start reading all trials for a single time step
@@ -35,25 +38,41 @@ while(~feof(fid))
 		trinfo = textscan(fid,'%f %f',1); % trialnumber npart
 		tc = trinfo{1};
 		npart = trinfo{2};
+		
 		grouplist(tc).npart = cat(1,grouplist(tc).npart,npart);
 		
 		% read all particles for a given trial
 		pdata = textscan(fid,'%f %f %f %f %f',2*npart); %pc ID type nprot nfuse
 																									 %pos prot
+		if(npart<=0)
+			trc = trc+1;
+			continue;
+		end
 		pidvals = pdata{2}(1:2:end);
 		typevals = pdata{3}(1:2:end);
 		nfusevals = pdata{5}(1:2:end);
 		posvals = pdata{1}(2:2:end);
 		protvals = [pdata{2}(2:2:end),pdata{3}(2:2:end)];
 		
-		for pc = 1:length(pidvals)
-			pid = pidvals(pc);
-			grouplist(tc).particles(pid).id = pid;
-			grouplist(tc).particles(pid).type = typevals(pc);
-			grouplist(tc).particles(pid).time = [grouplist(tc).particles(pid).time;initdata{1}];
-			grouplist(tc).particles(pid).pos = [grouplist(tc).particles(pid).pos;posvals(pc)];
-			grouplist(tc).particles(pid).prot = [grouplist(tc).particles(pid).prot;protvals(pc,:)];
-			grouplist(tc).particles(pid).nfuse = nfusevals(pc);
+		if(opt.readsinglesnap)
+			for pc = 1:length(pidvals)
+				grouplist(tc).particles(pc).id = pidvals(pc);
+				grouplist(tc).particles(pc).type = typevals(pc);
+				grouplist(tc).particles(pc).time = [grouplist(tc).particles(pc).time;initdata{1}];
+				grouplist(tc).particles(pc).pos = [grouplist(tc).particles(pc).pos;posvals(pc)];
+				grouplist(tc).particles(pc).prot = [grouplist(tc).particles(pc).prot;protvals(pc,:)];
+				grouplist(tc).particles(pc).nfuse = nfusevals(pc);
+			end
+		else
+			for pc = 1:length(pidvals)
+				pid = pidvals(pc);
+				grouplist(tc).particles(pid).id = pid;
+				grouplist(tc).particles(pid).type = typevals(pc);
+				grouplist(tc).particles(pid).time = [grouplist(tc).particles(pid).time;initdata{1}];
+				grouplist(tc).particles(pid).pos = [grouplist(tc).particles(pid).pos;posvals(pc)];
+				grouplist(tc).particles(pid).prot = [grouplist(tc).particles(pid).prot;protvals(pc,:)];
+				grouplist(tc).particles(pid).nfuse = nfusevals(pc);
+			end
 		end
 		
 		trc = trc+1;

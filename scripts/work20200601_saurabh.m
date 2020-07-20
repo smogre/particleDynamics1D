@@ -34,11 +34,13 @@ pdensity = squeeze(sum(partdist,2))/L/ntrials;
 %%
 ptype = 1;
 typestr = [{'lyso'},{'phago'}];
-figure
+% figure
 ssinds = nsave;
 ct = 1;
-for pc = 2:length(pvals)-1
+for pc = 1:length(pvals)
 	disp(pc)
+	subplot(2,3,ct)
+	ct = ct+1;
 
 	meancvals = mean(cvals(ssinds,:,2,pc),1);
 % 	semvals = std(cvals(ssinds,:),1)./sqrt(length(ssinds));
@@ -46,7 +48,7 @@ for pc = 2:length(pvals)-1
 % 	curve2 = meancvals-semvals;
 % 	x2 = [regedges(1:end-1),fliplr(regedges(1:end-1))];
 % 	inBetween = [curve1,fliplr(curve2)];
-	plot(regedges(1:end-1),meancvals,'Color',cmap(pc,:),'DisplayName',...
+	plot(regedges(1:end-1),meancvals,'o','Color',cmap(pc,:),'DisplayName',...
 																									sprintf('fusion probability: %0.3f',pvals(pc)))
 % 	stdshade(cvals(ssinds,:),0.4,regedges(1:end-1))
 % 	hold on
@@ -59,21 +61,18 @@ for pc = 2:length(pvals)-1
 	hold on
 	plot(regedges(1:end-1),afunc_th(c0,gamvals(pc),betvals(pc),regedges(1:end-1)),'--',...
 			'Color',cmap(pc,:));
+	plot_cleanup
+	xlabel('distance')
+	ylabel('acidification')
+	title(sprintf('pfuse: %0.3f',pvals(pc)))
+	xlim([0,0.2])
+	hold off
 end
-% 	ylim([0,0.001])
-hold off
-plot_cleanup
-xlabel('distance')
-% ylabel('time- and ensemble-averaged fusion events')
-ylabel('relative autophagosome acidification')
-% ylabel('number of autophagosomes')
-%  	title(sprintf('time: %0.3f',tvals(tc)))
-% 	title(sprintf('pfuse: %0.3f',pfuse))
 % 	drawnow
 % 	M(tc) = getframe(gcf)
 % 	pause(0.01)
 % end
-legend show
+% legend show
 %%
 % animation2movie(M,'nfusedist.avi',24)
 %%
@@ -100,7 +99,7 @@ kpy = 17.9*100;
 % phago production rate
 kpp = 1.6*100;
 % encounter length
-ell = (rp+ry);
+ell = 2*(rp+ry);
 % lyso acidification
 c0 = 1;
 % beta

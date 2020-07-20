@@ -355,4 +355,27 @@ CONTAINS
     END IF
   END SUBROUTINE GETCLOSESTPT
 
+  SUBROUTINE GETPOISSONEVENTS(LAMBDA,NVAL)
+  ! returns a randomly sampled number of events N from a poisson distribution
+  ! lambda is the rate parameter (number of events per time interval)
+    IMPLICIT NONE
+    DOUBLE PRECISION,INTENT(IN):: LAMBDA
+    INTEGER,INTENT(OUT):: NVAL
+    INTEGER :: NCT
+    DOUBLE PRECISION :: EXPVAL,UPROD
+
+    EXPVAL = EXP(-LAMBDA)
+    NVAL = 0
+    NCT = 0
+    UPROD = GRND()
+
+    DO WHILE(UPROD.GT.EXPVAL)
+      UPROD = UPROD*GRND()
+      NCT = NCT+1
+    END DO
+
+    NVAL = NCT
+    
+  END SUBROUTINE GETPOISSONEVENTS
+
 END MODULE GENUTIL

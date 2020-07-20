@@ -17,7 +17,7 @@ MODULE KEYS
   ! ----------------------------------------------------------------------------
   ! particle properties
   ! ----------------------------------------------------------------------------
-  INTEGER, PARAMETER :: MAXNPART = 1000 ! maximum number of particles allowed
+  INTEGER, PARAMETER :: MAXNPART = 1500 ! maximum number of particles allowed
   INTEGER, PARAMETER :: MAXNTYPE = 2 ! maximum number of particle types
 
   INTEGER :: NTYPE ! number of particle types
@@ -59,7 +59,7 @@ MODULE KEYS
   ! ----------------------------------------------------------------------------
   DOUBLE PRECISION :: DOMLEN ! length of domain
   INTEGER :: NREG ! number of regions
-  INTEGER, PARAMETER :: MAXNREG = 1000 ! maximum number of regions allowed
+  INTEGER, PARAMETER :: MAXNREG = 1500 ! maximum number of regions allowed
   DOUBLE PRECISION :: REGPOS(MAXNREG) ! positions of regions
   
   ! ----------------------------------------------------------------------------
