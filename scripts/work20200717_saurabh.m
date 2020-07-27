@@ -68,14 +68,16 @@ rho_y0 = kpy/vy;
 rho_y = @(beta,x) rho_y0*exp(-beta.*x);
 % acidification
 c0 = 1;
-afunc_sim = @(n,c0,rp,rl) n*c0./(n+rp^3/rl^3);
+% afunc_sim = @(n,c0,rp,rl) n*c0./(n+rp^3/rl^3);
+afunc_sim = @(n,c0,rp,rl) n*c0.*rl^3/rp^3;
 %%
 dt = 0.001; % simulation timestep
-phfrate = 1.0; % framerate for phagosomes (binwidth)
+phfrate = 10; % framerate for phagosomes (binwidth)
 lyfrate = 1.01; % framerate for lysosomes (binwidth)
 xp = 0:(phfrate*vp*dt):1; % possible positions for phagosomes
 xl = 0:(lyfrate*vy*dt):1; % possible positions for lysosomes
 %% alternative binning
+nreg = 100;
 xp = linspace(0,1,nreg+2);
 xl = xp;
 %% plot organelle densities
@@ -114,15 +116,18 @@ for pc = 1:length(pvals)
 	
 	if(length(pvals)>1); subplot(2,3,pc); end
 	
-	[~,~,binind] = histcounts(phpos{pc},xp);
+	[nphago,~,binind] = histcounts(phpos{pc},xp);
+	acvals = afunc_sim(nfusedist{pc},c0,rp,ry);
 	nfusehist = accumarray(binind,nfusedist{pc});
+	achist = accumarray(binind,acvals);
 
 	xpvals = 0.5*(xp(1:end-1)+xp(2:end)); 
 % 	xpvals = xp(2:end);
 	dxp = xpvals(2)-xpvals(1);
 
-	plot(xpvals,afunc_sim(nfusehist,c0,rp,ry),'o','Color',cmap(pc,:)...
-																															,'DisplayName','acidification, sims')
+% 	plot(xpvals,achist./nphago','o','Color',cmap(pc,:),'DisplayName','acidification, sims')
+	plot(xpvals,afunc_sim(nfusehist,c0,rp,ry)./nphago','o','Color',cmap(pc,:),...
+																																'DisplayName','acidification, sims')
 	hold on
 	plot(xpvals,afunc_th(c0,gamvals(pc),betvals(pc),xpvals),'--','Color',cmap(pc,:),...
 																													'DisplayName','acidification, an. model');
