@@ -59,7 +59,7 @@ ell = 2*(rp+ry);
 % beta
 betvals = kpp*ell/vp/vy*kfvals;
 % gamma
-gamvals = kpy*ell/vp/vy*vy/(vy+vp)*kfvals;
+gamvals = kpy*ell/vp/vy*ry^3/(ry^3+rp^3)*kfvals;
 % acidicication
 afunc_th = @(c0,gam,beta,x) c0*(1-exp(gam/beta*(exp(-beta*Lhat)-exp(-beta*x))));
 % density
