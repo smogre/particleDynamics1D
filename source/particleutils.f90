@@ -243,7 +243,7 @@ CONTAINS
   END SUBROUTINE OUTPUTSNAPSHOT
 
   SUBROUTINE OUTPUTPROT(CURTIME,CELLPROT,AXPROT,FILENAME,NPROT,NTRIALS,APPEND)
-    ! Output a snapshot of current configuration
+    ! Output protein content in the cell
     ! ------------------
     ! input parameters:
     ! GROUPLIST: object describing multiple particle groups
