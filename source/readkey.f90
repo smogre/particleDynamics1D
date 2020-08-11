@@ -56,6 +56,7 @@ SUBROUTINE READKEY
   ! protein dynamics
   NPROT = 1
   PROTCONV = 0D0
+  KMVALS = 0D0
 
   ! fusion details
   KFUSE = 0D0 ! matrix of fusion rates
@@ -168,6 +169,10 @@ SUBROUTINE READKEY
           CALL READI(I)
           DO J = 1,MIN(MAXNTYPE,NITEMS-2)
             CALL READF(KFUSE(I,J))
+          END DO
+        CASE('KMVALS')
+          DO I = 1,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(KMVALS(I))
           END DO
         CASE('KPROD')
           CALL READF(KPROD(1))

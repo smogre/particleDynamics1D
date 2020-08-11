@@ -37,6 +37,7 @@ MODULE KEYS
   INTEGER, PARAMETER :: MAXNPROT = 2 ! maximum number of protein types
   INTEGER :: NPROT(MAXNTYPE) ! number of protein types in each particle type
   DOUBLE PRECISION :: PROTCONV(MAXNPROT,MAXNPROT,MAXNTYPE) ! conversion rate between proteins
+  DOUBLE PRECISION :: KMVALS(MAXNTYPE) !MM constant for protein degradation
 
   ! ----------------------------------------------------------------------------
   ! fusion parameters

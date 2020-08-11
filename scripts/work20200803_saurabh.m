@@ -8,7 +8,7 @@ ellstr = {'beta'};
 tic
 cmap = [0,0,1;0,0,1];
 options = struct();
-options.readsinglesnap = 1;
+options.readlastsnap = 1;
 lysopos = cell(length(ellstr),length(pvals));
 phpos = cell(length(ellstr),length(pvals));
 nfusedist = cell(length(ellstr),length(pvals));

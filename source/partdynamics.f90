@@ -102,7 +102,7 @@ CONTAINS
           PARTP=>PGROUP%PLIST(PC)
           NPROC = NPROC + 1
 
-          ! move particles
+          ! move particle
           PARTP%POS = PARTP%POS+PARTP%CURSTATE*PARTP%VEL*DELT
 
           ! delete particles that move out of bounds
@@ -116,7 +116,6 @@ CONTAINS
             END IF
             IF(PARTP%POS.GT.DOMP%DOMLEN) THEN
               SURVCT = SURVCT+1
-              ! PRINT*, SURVCT, 'PARTICLES REACHED DOMAIN END. ID: ',PARTP%ID
             END IF
             CALL REMOVEPARTICLE(PGROUP,PC)
             CYCLE

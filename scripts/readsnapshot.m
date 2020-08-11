@@ -13,8 +13,8 @@ opt.progstep = 0;
 opt.onlyread = 0;
 % maximum number of particles to read
 opt.maxpart = inf;
-% read single snapshot?
-opt.readsinglesnap = 0;
+% only read last snapshot?
+opt.readlastsnap = 0;
 
 if(exist('options','var')); opt = copyStruct(options,opt); end
 
@@ -54,13 +54,15 @@ while(~feof(fid))
 		posvals = pdata{1}(2:2:end);
 		protvals = [pdata{2}(2:2:end),pdata{3}(2:2:end)];
 		
-		if(opt.readsinglesnap)
+		if(opt.readlastsnap)
+			grouplist(tc).npart = npart;
+			grouplist(tc).particles = [];
 			for pc = 1:length(pidvals)
 				grouplist(tc).particles(pc).id = pidvals(pc);
 				grouplist(tc).particles(pc).type = typevals(pc);
-				grouplist(tc).particles(pc).time = [grouplist(tc).particles(pc).time;initdata{1}];
-				grouplist(tc).particles(pc).pos = [grouplist(tc).particles(pc).pos;posvals(pc)];
-				grouplist(tc).particles(pc).prot = [grouplist(tc).particles(pc).prot;protvals(pc,:)];
+				grouplist(tc).particles(pc).time = initdata{1};
+				grouplist(tc).particles(pc).pos = posvals(pc);
+				grouplist(tc).particles(pc).prot = protvals(pc,:);
 				grouplist(tc).particles(pc).nfuse = nfusevals(pc);
 			end
 		else
