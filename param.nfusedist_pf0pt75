@@ -5,10 +5,10 @@
 ACTION RUNDYNAMICS
 
 # number of steps
-NSTEPS 2D3
+NSTEPS 1D5
 
 # number of trials
-NTRIALS 1E3
+NTRIALS 1E2
 
 ##############################################
 # particle information
@@ -81,7 +81,7 @@ PROTCONV 2 1 0D0 0.2D0
 PROTCONV 1 1 0D0 -0.2D0
 
 # MM constant for protein conversion
-KMVALS 0 10
+KMVALS 0D0 0.1D0
 
 ##############################################
 # fusion parameters
@@ -133,7 +133,7 @@ DELT 1D-3
 # where to save output file
 OUTPUT 1E2 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots
-SNAPSHOTS 2E3 /data/SimData/particledynamics1D/snapfiles/*.snap.out
+SNAPSHOTS 1D5 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # save distribution of nfuse
 FUSEDIST 0 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
 # print status to console

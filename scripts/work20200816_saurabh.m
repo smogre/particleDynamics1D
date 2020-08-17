@@ -1,0 +1,292 @@
+%% plot particle density/acidification/protein content histograms using snapshots
+clear;clc;
+pvals = [0,0.25,0.5,0.75,1];
+pstr = [{'0'},{'0pt25'},{'0pt50'},{'0pt75'},{'1'}];
+ksvals = [0,26.7,267];
+kstr = [{''},{'_krev26.7D0'},{'_krev267D0'}];
+%%
+tic
+options = struct();
+options.readsinglesnap = 1;
+lysopos = cell(length(pvals),length(ksvals));
+phpos = lysopos;
+nfusedist = lysopos;
+cellprot = lysopos;
+axprot = lysopos;
+protdist = lysopos;
+
+for kc = 1:length(ksvals)
+	for pc = 1:length(pvals)
+		disp([pc kc])
+		filename = sprintf('/data/SimData/particledynamics1D/snapfiles/nfusedist_pf%s%s.snap.out',...
+			pstr{pc},kstr{kc});
+		% 	filename = '/data/SimData/particledynamics1D/snapfiles/testnfuse.snap.out';
+		[grouplist,tvals,domlen,ntrials] = readsnapshot(filename,options);
+		
+		protfile = sprintf('/data/SimData/particledynamics1D/outfiles/nfusedist_pf%s%s.out',...
+								pstr{pc},kstr{kc});
+		[~,cellprot{pc,kc},axprot{pc,kc},~] = readprot(protfile);
+		
+		tmplysopos = [];
+		tmpphpos = [];
+		tmpnfuse = [];
+		tmpprot = [];
+		
+		for tc = 1:length(grouplist)
+			pos = vertcat(grouplist(tc).particles(:).pos);
+			ptypes = vertcat(grouplist(tc).particles(:).type);
+			nfuse = vertcat(grouplist(tc).particles(:).nfuse);
+			prot = vertcat(grouplist(tc).particles(:).prot);
+			
+			tmplysopos = cat(1,tmplysopos,pos(ptypes==1));
+			tmpphpos = cat(1,tmpphpos,pos(ptypes==2));
+			tmpnfuse = cat(1,tmpnfuse,nfuse(ptypes==2));
+			tmpprot = cat(1,tmpprot,prot(ptypes==2,:));
+		end
+		
+		lysopos{pc,kc} = tmplysopos;
+		phpos{pc,kc} = tmpphpos;
+		nfusedist{pc,kc} = tmpnfuse;
+		protdist{pc,kc} = tmpprot;
+	end
+end
+toc
+%% analytical model predictions
+% domain length in microns
+L = 100;
+% scaled domain length
+Lhat = 1;
+% time unit
+tau = L/0.75;
+% phago velocity
+vp = 1;	% 0.75 um/s
+% lyso velocity
+vy = 2.67;	% 2um/s
+% phago radius
+rp = 0.4/L; % 400nm
+% lyso radius
+ry = 0.1/L; % 100nm
+% encounter time
+T = 2*(rp+ry)/(vp+vy);
+% fusion rates
+kfvals = -log(1-pvals)/T;
+% lyso production rate
+kpy = 17.9*100;
+% phago production rate
+kpp = 1.6*100;
+% encounter length
+ell = 2*(rp+ry);
+% beta
+betvals = kpp*ell/vp/vy*kfvals;
+% gamma
+gamvals = kpy*ell/vp/vy*ry^3/(ry^3+rp^3)*kfvals;
+% acidicication
+afunc_th = @(c0,gam,beta,x) c0*(1-exp(gam/beta*(exp(-beta*Lhat)-exp(-beta*x))));
+% density
+rho_p = @(x) kpp/vp.*ones(size(x));
+rho_y0 = kpy/vy;
+rho_y = @(beta,x) rho_y0*exp(-beta.*x);
+% acidification
+c0 = 1;
+% afunc_sim = @(n,c0,rp,rl) n*c0./(n+rp^3/rl^3);
+afunc_sim = @(n,c0,rp,rl) n*c0.*rl^3/rp^3;
+% amount of degraded protein near cell body
+k0 = 0.2;
+Km = 0.1;
+degprot_th = @(c0,k0,Km,gam,beta) (1-exp(-(k0/vp)*afunc_th(c0,gam,beta,0)/(afunc_th(c0,gam,beta,0)+Km)));
+
+%%
+dt = 0.001; % simulation timestep
+phfrate = 10; % framerate for phagosomes (binwidth)
+lyfrate = 1.01; % framerate for lysosomes (binwidth)
+xp = 0:(phfrate*vp*dt):1; % possible positions for phagosomes
+xl = 0:(lyfrate*vy*dt):1; % possible positions for lysosomes
+%% alternative binning
+nreg = 100;
+xp = linspace(0,1,nreg+2);
+xl = xp;
+%% plot organelle densities
+for pc = 1:length(pvals)
+	
+	if(length(pvals)>1); subplot(2,3,pc); end
+	
+	nlyso = histcounts(lysopos{pc},xl);
+	nphago = histcounts(phpos{pc},xp);
+	
+	xlvals = 0.5*(xl(1:end-1)+xl(2:end)); 
+% 	xlvals = xl(2:end);
+	dxl = xlvals(2)-xlvals(1);
+	
+	xpvals = 0.5*(xp(1:end-1)+xp(2:end)); 
+% 	xpvals = xp(2:end);
+	dxp = xpvals(2)-xpvals(1);
+
+	plot(xlvals,nlyso./ntrials./dxl,'bo','DisplayName','lyso density, sims')
+	hold on
+	plot(xlvals,rho_y(betvals(pc),xlvals),'b--','DisplayName','lyso density, an. model');
+	plot(xpvals,nphago./ntrials./dxp,'ro','DisplayName','phago density, sims')
+	plot(xpvals,rho_p(xpvals),'r--','DisplayName','phago density, an. model');
+	hold off
+	plot_cleanup
+	title(sprintf('fusion probability: %0.3f',pvals(pc)))
+	xlim([0,0.2]);
+	ylim([0,750]);
+	xlabel('distance')
+	ylabel('organelle density')
+end
+%% plot acidification
+% figure
+cmap = colormapinterp([0,0,1;1,0,0],length(pvals));
+for pc = 1:length(pvals)
+	
+	if(length(pvals)>1); subplot(2,3,pc); end
+	
+	[nphago,~,binind] = histcounts(phpos{pc},xp);
+	acvals = afunc_sim(nfusedist{pc},c0,rp,ry);
+	nfusehist = accumarray(binind,nfusedist{pc});
+	achist = accumarray(binind,acvals);
+
+	xpvals = 0.5*(xp(1:end-1)+xp(2:end)); 
+% 	xpvals = xp(2:end);
+	dxp = xpvals(2)-xpvals(1);
+
+% 	plot(xpvals,achist./nphago','o','Color',cmap(pc,:),'DisplayName','acidification, sims')
+	plot(xpvals,afunc_sim(nfusehist,c0,rp,ry)./nphago','o','Color',cmap(pc,:),...
+																																'DisplayName','acidification, sims')
+	hold on
+	plot(xpvals,afunc_th(c0,gamvals(pc),betvals(pc),xpvals),'--','Color',cmap(pc,:),...
+																													'DisplayName','acidification, an. model');
+	hold off
+	plot_cleanup
+	title(sprintf('fusion probability: %0.3f',pvals(pc)))
+	xlim([0,0.2]);
+% 	ylim([0,10]);
+	xlabel('distance')
+	ylabel('organelle density')
+	
+end
+%% plot protein content
+% figure
+cmap = colormapinterp([0,0,1;1,0,0],length(ksvals));
+
+for pc = 1:length(pvals)
+	
+	if(length(pvals)>1); subplot(2,3,pc); end
+	for kc = 1:length(ksvals)
+		
+		[nphago,~,binind] = histcounts(phpos{pc,kc},xp);
+		undegprot = accumarray(binind,protdist{pc,kc}(:,1));
+		degprot = accumarray(binind,protdist{pc,kc}(:,2));
+		
+		
+		xpvals = 0.5*(xp(1:end-1)+xp(2:end));
+		% 	xpvals = xp(2:end);
+		dxp = xpvals(2)-xpvals(1);
+		
+% 		plot(xpvals,degprot_th(c0,k0,Km,gamvals(pc),betvals(pc))*ones(size(xpvals)),'--','Color',cmap(pc,:),...
+% 			'DisplayName','acidification, sims')
+		%  	hold on
+		plot(xpvals,degprot./nphago','Color',cmap(kc,:),'DisplayName',...
+			sprintf('runlen: %0.3f',vy/ksvals(kc)))
+		hold on
+	end
+	hold off
+	plot_cleanup
+	title(sprintf('pf: %0.3f',pvals(pc)))
+	lgd = legend;
+	lgd.Interpreter = 'latex';
+	xlim([0,0.1]);
+	% 	ylim([0,10]);
+	xlabel('distance')
+	ylabel('degraded protein content')
+end
+%% get cell protein and axonal protein amounts
+num_ssinds = 100;
+undeg_cellprot_ss = zeros(num_ssinds+1,length(pvals),length(ksvals));
+deg_cellprot_ss = undeg_cellprot_ss;
+undeg_axprot_ss = undeg_cellprot_ss;
+deg_axprot_ss = undeg_cellprot_ss;
+deg_protflux_ss = undeg_cellprot_ss;
+undeg_protflux_ss = undeg_cellprot_ss;
+for kc = 1:length(ksvals)
+	for pc = 1:length(pvals)
+		undeg_cellprot_ss(:,pc,kc) = cellprot{pc,kc}((end-num_ssinds:end),1)/ntrials;
+		deg_cellprot_ss(:,pc,kc) = cellprot{pc,kc}((end-num_ssinds:end),2)/ntrials;
+		undeg_axprot_ss(:,pc,kc) = axprot{pc,kc}((end-num_ssinds:end),1)/ntrials;
+		deg_axprot_ss(:,pc,kc) = axprot{pc,kc}((end-num_ssinds:end),2)/ntrials;
+		deg_protflux_ss(:,pc,kc) = diff(cellprot{pc,kc}((end-num_ssinds-1):end,2))/0.1/ntrials;
+		undeg_protflux_ss(:,pc,kc) = diff(cellprot{pc,kc}((end-num_ssinds-1):end,1))/0.1/ntrials;
+	end
+end
+%%
+% figure
+maxconvrate = 0.18;
+uprot = mean(deg_axprot_ss+undeg_protflux_ss/maxconvrate,1);
+mean_deg_protflux_ss = squeeze(mean(deg_protflux_ss));
+std_deg_protflux_ss = squeeze(std(deg_protflux_ss));
+%%
+% figure
+for kc = 1:length(ksvals)
+	errorbar(pvals,mean_deg_protflux_ss(:,kc),mean_deg_protflux_ss(:,kc),'o-','Color',cmap(kc,:),...
+					'LineWidth',2,'DisplayName',sprintf('runlen: %0.3f',vy/ksvals(kc)))
+	hold on
+end
+hold off
+plot_cleanup
+xlabel('pf')
+ylabel('flux of degraded protein')
+lgd = legend;
+lgd.Interpreter = 'latex';
+
+%%
+mean_deg_cellprot_ss = squeeze(mean(deg_cellprot_ss));
+mean_undeg_cellprot_ss = squeeze(mean(undeg_cellprot_ss));
+mean_deg_axprot_ss = squeeze(mean(deg_axprot_ss));
+mean_undeg_axprot_ss = squeeze(mean(undeg_axprot_ss));
+std_deg_cellprot_ss = squeeze(std(deg_cellprot_ss));
+std_undeg_cellprot_ss = squeeze(std(undeg_cellprot_ss));
+std_deg_axprot_ss = squeeze(std(deg_axprot_ss));
+std_undeg_axprot_ss = squeeze(std(undeg_axprot_ss));
+
+for kc = 1:length(ksvals)
+	subplot(1,4,1)
+	errorbar(pvals,mean_undeg_cellprot_ss(:,kc),std_undeg_cellprot_ss(:,kc),'o-','Color',cmap(kc,:),...
+												'LineWidth',2,'DisplayName',sprintf('runlen: %0.3f',vy/ksvals(kc)))
+	hold on
+	plot_cleanup
+	xlabel('pf')
+	ylabel('protein content')
+	title(sprintf('undegraded cell prot\n'))
+	lgd = legend;
+	lgd.Interpreter = 'latex';
+
+	subplot(1,4,2)
+	errorbar(pvals,mean_undeg_axprot_ss(:,kc),std_undeg_axprot_ss(:,kc),'o-','Color',cmap(kc,:),...
+												'LineWidth',2,'DisplayName',sprintf('runlen: %0.3f',vy/ksvals(kc)))
+	hold on
+	plot_cleanup
+	xlabel('pf')
+	title(sprintf('undegraded ax prot\n'))
+	lgd = legend;
+	lgd.Interpreter = 'latex';
+	
+	subplot(1,4,3)
+	errorbar(pvals,mean_deg_cellprot_ss(:,kc),std_deg_cellprot_ss(:,kc),'o-','Color',cmap(kc,:),...
+												'LineWidth',2,'DisplayName',sprintf('runlen: %0.3f',vy/ksvals(kc)))
+	hold on
+	plot_cleanup
+	xlabel('pf')
+	title('degraded cell prot')
+	lgd = legend;
+	lgd.Interpreter = 'latex';
+	
+	subplot(1,4,4)
+	errorbar(pvals,mean_deg_axprot_ss(:,kc),std_deg_axprot_ss(:,kc),'o-','Color',cmap(kc,:),...
+												'LineWidth',2,'DisplayName',sprintf('runlen: %0.3f',vy/ksvals(kc)))
+	hold on
+	plot_cleanup
+	xlabel('pf')
+	title('degraded ax prot')
+	lgd = legend;
+	lgd.Interpreter = 'latex';
+end
