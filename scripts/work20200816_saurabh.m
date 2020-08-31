@@ -3,7 +3,7 @@ clear;clc;
 pvals = [0,0.25,0.5,0.75,1];
 pstr = [{'0'},{'0pt25'},{'0pt50'},{'0pt75'},{'1'}];
 ksvals = [0,26.7,267];
-kstr = [{''},{'_krev26.7D0'},{'_krev267D0'}];
+runlenstr = [{'0pt01'},{'0pt1'},{'inf'}];
 %%
 tic
 options = struct();
@@ -19,12 +19,12 @@ for kc = 1:length(ksvals)
 	for pc = 1:length(pvals)
 		disp([pc kc])
 		filename = sprintf('/data/SimData/particledynamics1D/snapfiles/nfusedist_pf%s%s.snap.out',...
-			pstr{pc},kstr{kc});
+			pstr{pc},runlenstr{kc});
 		% 	filename = '/data/SimData/particledynamics1D/snapfiles/testnfuse.snap.out';
 		[grouplist,tvals,domlen,ntrials] = readsnapshot(filename,options);
 		
 		protfile = sprintf('/data/SimData/particledynamics1D/outfiles/nfusedist_pf%s%s.out',...
-								pstr{pc},kstr{kc});
+								pstr{pc},runlenstr{kc});
 		[~,cellprot{pc,kc},axprot{pc,kc},~] = readprot(protfile);
 		
 		tmplysopos = [];
