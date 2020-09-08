@@ -25,7 +25,7 @@ classdef partgroupObj < handle
 		end
 		
 		function pgroup = clearParticles(pgroup,varargin)
-			pgroup.particles = struct('time',[],'pos',[],'id',[],'prot',[],'nfuse',[],'type',[]);
+			pgroup.particles = struct('time',[],'pos',[],'id',[],'prot',[],'acidity',[],'nfuse',[],'type',[]);
 		end
 	end
 end

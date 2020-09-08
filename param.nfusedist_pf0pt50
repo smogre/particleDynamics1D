@@ -5,7 +5,7 @@
 ACTION RUNDYNAMICS
 
 # number of steps
-NSTEPS 1D5
+NSTEPS 2D3
 
 # number of trials
 NTRIALS 1E2
@@ -57,7 +57,7 @@ DIFFCONST 0D0
 #KPROD 17.9D0 1.6D0
 #KPROD 0D0 0D0
 # boosted rate
-KPROD 17.9D2 1.6D2
+KPROD 17.9D3 1.6D3
 
 ##############################################
 # protein information
@@ -73,15 +73,20 @@ NPROT 0 2
 STARTPROT 1 0D0 0D0
 STARTPROT 2 1D0 0D0
 
+# initial acidity
+# format: a_i
+# where a_i is the initial acidification of the ith particle type
+STARTACID 1D0 0D0
+
 # protein conversion rates
 # format: i j k_ijk
 # where i,j are protein types,
 # k_ijk is the rate of conversion of prot j to i in particle type k
-PROTCONV 2 1 0D0 0.2D0
-PROTCONV 1 1 0D0 -0.2D0
+PROTCONV 2 1 0D0 1D0
+PROTCONV 1 1 0D0 -1D0
 
 # MM constant for protein conversion
-KMVALS 0D0 0.1D0
+KMVALS 0D0 0.01D0
 
 ##############################################
 # fusion parameters
@@ -97,16 +102,16 @@ USEPFUSE T
 # fusion probability
 # format: i pij
 # where i is the particle type, pij is the probability of fusion between i and j
-PFUSE 1 0D0 0.5D0
-PFUSE 2 0.5D0 0D0
+PFUSE 1 0D0 0.50D0
+PFUSE 2 0.50D0 0D0
 
 # fusion rates
 # matrix of fusion rates between particle types
 # format: i kij
 # where i is the particle type, kij is the fusion rate between particle i and j
 # uncomment following lines to use rate instead of probability
-#KFUSE 1 0D0 254.385
-#KFUSE 2 254.385 0D0
+#KFUSE 1 0D0 38.7D0
+#KFUSE 2 38.7D0 0D0
 
 # number of fusion events needed to saturate
 #MAXNFUSE 0 10
@@ -131,9 +136,9 @@ REGPOS -1D0
 # time step
 DELT 1D-3
 # where to save output file
-OUTPUT 1E2 /data/SimData/particledynamics1D/outfiles/*.out
+OUTPUT 1 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots
-SNAPSHOTS 1D5 /data/SimData/particledynamics1D/snapfiles/*.snap.out
+SNAPSHOTS 2D3 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # save distribution of nfuse
 FUSEDIST 0 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
 # print status to console

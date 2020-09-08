@@ -4,7 +4,7 @@ function [grouplist,tvals,domlen,ntrials] = readsnapshot(filename,options)
 % Info line: TIME NTRIALS DOMLEN
 %						|Ntrial blocks: TRIALNUMBER NPART
 %						|							|Npart blocks: pc, ID, type, nprot, nfuse
-%						|							|							pos, prot
+%						|							|							pos, prot, acidity
 
 opt = struct();
 % output progress after how many steps
@@ -43,7 +43,7 @@ while(~feof(fid))
 		
 		% read all particles for a given trial
 		pdata = textscan(fid,'%f %f %f %f %f',2*npart); %pc ID type nprot nfuse
-																									 %pos prot
+																									  %pos prot acidity
 		if(npart<=0)
 			trc = trc+1;
 			continue;
@@ -53,6 +53,7 @@ while(~feof(fid))
 		nfusevals = pdata{5}(1:2:end);
 		posvals = pdata{1}(2:2:end);
 		protvals = [pdata{2}(2:2:end),pdata{3}(2:2:end)];
+		acidityvals = pdata{4}(2:2:end);
 		
 		if(opt.readlastsnap)
 			grouplist(tc).npart = npart;
@@ -64,6 +65,7 @@ while(~feof(fid))
 				grouplist(tc).particles(pc).pos = posvals(pc);
 				grouplist(tc).particles(pc).prot = protvals(pc,:);
 				grouplist(tc).particles(pc).nfuse = nfusevals(pc);
+				grouplist(tc).particles(pc).acidity = acidityvals(pc);
 			end
 		else
 			for pc = 1:length(pidvals)
@@ -74,6 +76,7 @@ while(~feof(fid))
 				grouplist(tc).particles(pid).pos = [grouplist(tc).particles(pid).pos;posvals(pc)];
 				grouplist(tc).particles(pid).prot = [grouplist(tc).particles(pid).prot;protvals(pc,:)];
 				grouplist(tc).particles(pid).nfuse = nfusevals(pc);
+				grouplist(tc).particles(pid).acidity = acidityvals(pc);
 			end
 		end
 		

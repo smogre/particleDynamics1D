@@ -17,7 +17,7 @@ MODULE KEYS
   ! ----------------------------------------------------------------------------
   ! particle properties
   ! ----------------------------------------------------------------------------
-  INTEGER, PARAMETER :: MAXNPART = 1500 ! maximum number of particles allowed
+  INTEGER, PARAMETER :: MAXNPART = 10000 ! maximum number of particles allowed
   INTEGER, PARAMETER :: MAXNTYPE = 2 ! maximum number of particle types
 
   INTEGER :: NTYPE ! number of particle types
@@ -38,6 +38,7 @@ MODULE KEYS
   INTEGER :: NPROT(MAXNTYPE) ! number of protein types in each particle type
   DOUBLE PRECISION :: PROTCONV(MAXNPROT,MAXNPROT,MAXNTYPE) ! conversion rate between proteins
   DOUBLE PRECISION :: KMVALS(MAXNTYPE) !MM constant for protein degradation
+  DOUBLE PRECISION :: STARTACID(MAXNTYPE) ! initial acidity in each particle
 
   ! ----------------------------------------------------------------------------
   ! fusion parameters

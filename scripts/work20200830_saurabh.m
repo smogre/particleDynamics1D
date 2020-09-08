@@ -1,5 +1,5 @@
 %% test numerical ode solver
-pvals = [1e-4,0.1,0.5,0.75];
+pvals = 0.5;[1e-4,0.1,0.5,0.75];
 %% analytical model predictions
 % domain length in microns
 L = 100;
@@ -40,32 +40,34 @@ c0 = 1;
 % afunc_sim = @(n,c0,rp,rl) n*c0./(n+rp^3/rl^3);
 afunc_sim = @(n,c0,rp,rl) n*c0.*rl^3/rp^3;
 % amount of degraded protein near cell body
-k0 = 0.2;
-kM = 0.1;
+k0 = 1;
+kM = 0.01;
 degprot_th = @(c0,k0,Km,gam,beta) (1-exp(-(k0/vp)*afunc_th(c0,gam,beta,0)/(afunc_th(c0,gam,beta,0)+Km)));
 
 %%
 plotinds = 1:length(pvals);
 cmap = colormapinterp([0,0,1;1,0,0],length(plotinds));
-y0vals = zeros(length(pvals),1);
+G0vals = zeros(length(pvals),1);
 fluxvals = zeros(length(pvals),1);
 ct = 1;
 for pc = plotinds
-	[x,y] = ode45(@(x,y) degProtdist(x,y,k0,kM,gamvals(pc),betvals(pc),vp),linspace(1,0,1e3),0);
-	y0vals(pc) = y(end);
-	fluxvals(pc) = -vp*(y(end-1)-y(end))./(x(end-1)-x(end));
-	plot(x,y,'Color',cmap(ct,:),'DisplayName',sprintf('pf: %0.2g',pvals(pc)))
+	[x,G] = ode45(@(x,G) degProtdist(x,G,k0,kM,gamvals(pc),betvals(pc),vp),linspace(1,0,1e3),0);
+	G0vals(pc) = G(end);
+	fluxvals(pc) = -vp*(G(end-1)-G(end))./(x(end-1)-x(end));
+	plot(x,G,'Color',cmap(ct,:),'DisplayName',sprintf('pf: %0.2g',pvals(pc)))
 	hold on
+% 	plot(x,1-exp(k0.*(x-1)),'--','Color',cmap(ct,:))
 	ct = ct+1;
 end
 hold off
 plot_cleanup
 lgd = legend;
 lgd.Interpreter = 'latex';
-%%
 xlim([0,0.1])
+tmpy = ylim;
+ylim([0,tmpy(2)])
 %%
-semilogx(pvals,y0vals)
+semilogx(pvals,G0vals)
 % semilogx(pvals,fluxvals)
 plot_cleanup
 
@@ -76,6 +78,7 @@ end
 %%
 function kd = degrate(k0,kM,aval,vp)
 kd = k0.*aval./(aval+kM)./vp;
+% kd = k0;
 end
 %%
 function aval = acidification(gam,bet,x)
