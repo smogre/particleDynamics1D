@@ -1,9 +1,9 @@
 %% plot particle distribution movie
 clear;clc
 pvals = 0;
-pstr = {'0'};{'0pt25'};%[{'0'},{'1'}];
+pstr = {'0pt50'};%[{'0'},{'1'}];
 L = 100;
-fname = '/data/SimData/particledynamics1D/nfusefiles/testnfuse.fuse.out';
+fname = './nfusedist_pf0pt50.snap.out';
 [tvals,fusedist,partdist,nreg,regedges,ntrials] = readfusedist(fname);
 dx = regedges(2)-regedges(1);
 dt = 1e-3;

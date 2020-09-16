@@ -51,21 +51,26 @@ G0vals = zeros(length(pvals),1);
 fluxvals = zeros(length(pvals),1);
 ct = 1;
 for pc = plotinds
+% 	[x,G] = ode45(@(x,G) degProtdist(x,G,k0,kM,gamvals(pc),betvals(pc),vp),linspace(1,0,1e3),0);
 	[x,G] = ode45(@(x,G) degProtdist(x,G,k0,kM,gamvals(pc),betvals(pc),vp),linspace(1,0,1e3),0);
 	G0vals(pc) = G(end);
 	fluxvals(pc) = -vp*(G(end-1)-G(end))./(x(end-1)-x(end));
-	plot(x,G,'Color',cmap(ct,:),'DisplayName',sprintf('pf: %0.2g',pvals(pc)))
-	hold on
+% 	plot(x,G,'Color',cmap(ct,:),'DisplayName',sprintf('pf: %0.2g',pvals(pc)))
+% 	hold on
 % 	plot(x,1-exp(k0.*(x-1)),'--','Color',cmap(ct,:))
 	ct = ct+1;
 end
-hold off
+% hold off
+% plot_cleanup
+% lgd = legend;
+% lgd.Interpreter = 'latex';
+% xlim([0,0.1])
+% tmpy = ylim;
+% ylim([0,tmpy(2)])
+%%
+plot(x,G)
+% xlim([0,0.1])
 plot_cleanup
-lgd = legend;
-lgd.Interpreter = 'latex';
-xlim([0,0.1])
-tmpy = ylim;
-ylim([0,tmpy(2)])
 %%
 semilogx(pvals,G0vals)
 % semilogx(pvals,fluxvals)
@@ -77,10 +82,12 @@ function dy = degProtdist(x,y,k0,kM,gamvals,betvals,vp)
 end
 %%
 function kd = degrate(k0,kM,aval,vp)
-kd = k0.*aval./(aval+kM)./vp;
+% kd = k0.*aval./(aval+kM)./vp;
 % kd = k0;
+	kd = aval;
 end
 %%
 function aval = acidification(gam,bet,x)
-	aval = 1-exp(gam/bet.*(exp(-bet)-exp(-bet.*x)));
+% 	aval = 1-exp(gam/bet.*(exp(-bet)-exp(-bet.*x)));
+	aval = 1-x;
 end

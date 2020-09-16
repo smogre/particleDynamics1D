@@ -9,7 +9,6 @@ IMPLICIT NONE
 
 CONTAINS
 
-  !INSERT PARTICLE DYNAMICS CODE HERE
   SUBROUTINE TRANSPORTSIM(GROUPLIST,DOMP,PARAMP,NTRIALS,DOFUSION)
   !simulates the transport of phagosomes and lysosomes in a 1D domain
     USE PARTICLEUTILS, ONLY: PARTICLE,PARTICLEGROUP,PARTICLEPARAMS,DOMAIN,&
@@ -40,7 +39,7 @@ CONTAINS
     END IF
 
     SURVCT = 0
-    ! initial snapshot
+    ! output initial snapshot
     APPENDTOFILE = .FALSE.
     IF(SNAPEVERY.GT.0) THEN
       ALLOCATE(INFO(3))
@@ -48,7 +47,7 @@ CONTAINS
       CALL OUTPUTSNAPSHOT(GROUPLIST,SNAPFILE,INFO,NTRIALS,APPENDTOFILE)
     END IF
 
-    ! initial protein content output
+    ! output initial protein content
     IF(OUTEVERY.GT.0) THEN
       CELLPROT = 0D0
       AXPROT = 0D0
@@ -56,7 +55,7 @@ CONTAINS
       CALL OUTPUTPROT(0D0,CELLPROT,TOTAXPROT,OUTFILE,MAXNPROT,NTRIALS,APPENDTOFILE)
     END IF
 
-    ! initial distribution of number of fusion events
+    ! output initial distribution of number of fusion events
     IF(FUSEDISTEVERY.GT.0) THEN
       ALLOCATE(NFUSEDIST(DOMP%NREG+1,PARAMP%NTYPE),FUSEDISTVAL(DOMP%NREG+1,PARAMP%NTYPE))
       ALLOCATE(NPARTDIST(DOMP%NREG+1,PARAMP%NTYPE),PARTDISTVAL(DOMP%NREG+1,PARAMP%NTYPE))
@@ -82,9 +81,11 @@ CONTAINS
         END IF
       END IF
       
+      ! initialize arrays to record protein content
       TOTAXPROT = 0D0
       IF(ALLOCATED(NFUSEDIST)) NFUSEDIST = 0
       IF(ALLOCATED(NPARTDIST)) NPARTDIST = 0
+
       ! go through all particle groups
       DO TRC = 1,NTRIALS
         PGROUP=>GROUPLIST(TRC)
@@ -104,9 +105,9 @@ CONTAINS
 
           ! move particle
           PARTP%POS = PARTP%POS+PARTP%CURSTATE*PARTP%VEL*DELT
-
+          
           ! delete particles that move out of bounds
-          IF((PARTP%POS.GT.DOMP%DOMLEN).OR.(PARTP%POS.LT.0D0)) THEN
+          IF((PARTP%POS.GT.DOMP%DOMLEN).OR.(PARTP%POS.LE.0D0)) THEN
             IF(PARTP%POS.LT.0D0) THEN
               IF(PARTP%NPROT.GT.0.AND.OUTEVERY.GT.0) THEN
                 CELLPROT(1:PARTP%NPROT) = CELLPROT(1:PARTP%NPROT)+PARTP%PROT
@@ -189,6 +190,7 @@ CONTAINS
   END SUBROUTINE TRANSPORTSIM
 
   SUBROUTINE PRODUCEPARTICLES(PGROUP,PARAMP)
+  ! subroutine to produce new particles
     USE PARTICLEUTILS, ONLY: PARTICLEGROUP,PARTICLEPARAMS,PARTICLE,MAKEPARTICLE
     USE GENUTIL,ONLY: GETPOISSONEVENTS
     USE KEYS, ONLY: DELT
@@ -203,22 +205,6 @@ CONTAINS
 
     NMAKE = 0
     DO NC = 1,PARAMP%NTYPE ! go through each type of particle
-      ! check if particle is produced
-      ! IF(GRND().LE.1-EXP(-PARAMP%KPROD(NC)*DELT)) THEN
-      !   ! check if you have space for a new particle
-      !   IF(SUM(PGROUP%NPART).GE.PGROUP%MAXNPART) THEN
-      !     PRINT*, 'ERROR: too many particles added.',&
-      !              PGROUP%NPART, PGROUP%MAXNPART
-      !     STOP 1
-      !   END IF
-
-      !   PARTP=>PGROUP%PLIST(SUM(PGROUP%NPART)+1)
-      !   PID = PGROUP%LASTID+1
-      !   CALL MAKEPARTICLE(PARTP,PID,NC,PARAMP,CANFUSE=.TRUE.)
-      !   PGROUP%NPART(NC)  = PGROUP%NPART(NC) + 1
-      !   PGROUP%LASTID = PID      
-      !   ! PRINT*, 'TESTX: PARTICLE PRODUCED, PID, TYPE, POS:',PARTP%ID,PARTP%PTYPE,PARTP%POS
-      ! END IF
 
       ! obtain number of particles produced
       CALL GETPOISSONEVENTS(PARAMP%KPROD(NC)*DELT,NMAKE)
