@@ -100,9 +100,9 @@ T = 2*(rp+ry)/(vp+vy);
 % fusion rates
 kfvals = -log(1-pvals)/T;
 % lyso production rate
-kpy = 17.9*1000;
+kpy = 17.9*100;
 % phago production rate
-kpp = 1.6*1000;
+kpp = 1.6*100;
 % encounter length
 ell = 2*(rp+ry);
 % beta
@@ -126,7 +126,7 @@ kM = 0.01;
 
 %%
 dt = 0.001; % simulation timestep
-phfrate = 10; % framerate for phagosomes (binwidth)
+phfrate = 5; % framerate for phagosomes (binwidth)
 lyfrate = 1.01; % framerate for lysosomes (binwidth)
 xp = 0:(phfrate*vp*dt):1; % possible positions for phagosomes
 xl = 0:(lyfrate*vy*dt):1; % possible positions for lysosomes
@@ -142,7 +142,7 @@ rc = 1;
 ct = 1;
 for pc = plotinds
 	
-	if(length(pvals(plotinds))>1); subplot(1,2,ct); end
+	if(length(pvals(plotinds))>1); subplot(2,3,ct); end
 	
 	nlyso = histcounts(lysopos{pc,rc},xl);
 	nphago = histcounts(phpos{pc,rc},xp);
@@ -177,11 +177,11 @@ cmap = colormapinterp([0,0,1;1,0,0],length(pvals(plotinds)));
 ct = 1;
 for pc = plotinds
 	
-	if(length(pvals)>1); subplot(1,2,ct); end
+	if(length(pvals)>1); subplot(2,3,ct); end
 	
 	[nphago,~,binind] = histcounts(phpos{pc,rc},xp);
-% 	acvals = afunc_sim(nfusedist{pc,rc},c0,rp,ry);
-	acvals = phacid{pc,rc};
+	acvals = afunc_sim(nfusedist{pc,rc},c0,rp,ry);
+% 	acvals = phacid{pc,rc};
 	
 	nfusehist = accumarray(binind,nfusedist{pc});
 	achist = accumarray(binind,acvals);
