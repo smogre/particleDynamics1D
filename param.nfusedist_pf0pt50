@@ -5,10 +5,10 @@
 ACTION RUNDYNAMICS
 
 # number of steps
-NSTEPS 2D3
+NSTEPS 1D3
 
 # number of trials
-NTRIALS 1E2
+NTRIALS 1
 
 ##############################################
 # particle information
@@ -20,7 +20,7 @@ NTRIALS 1E2
 NTYPE 2
 
 # initial number of particles of each type
-NPART 0 0
+NPART 1000 1
 
 # starting position for particle types
 # negative values => start uniformly in domain
@@ -55,16 +55,18 @@ DIFFCONST 0D0
 #KPROD 1.79D0 0.16D0
 # rate for 100um domain
 #KPROD 17.9D0 1.6D0
-#KPROD 0D0 0D0
+KPROD 0D0 0D0
 # boosted rate
-KPROD 17.9D3 1.6D3
+#KPROD 1D3 1D2
 
 ##############################################
 # protein information
 ##############################################
 # number of protein types
-# default 2: non-degraded, degraded
+# default 2 types: non-degraded, degraded
 # protein 1: non-degraded, protein 2: degraded
+# format: np_i
+# where np_i is the number of protein types in particle type i
 NPROT 0 2
 
 # initial protein content
@@ -78,7 +80,7 @@ STARTPROT 2 1D0 0D0
 # where a_i is the initial acidification of the ith particle type
 STARTACID 1D0 0D0
 
-# protein conversion rates
+# maximal protein conversion rates k0
 # format: i j k_ijk
 # where i,j are protein types,
 # k_ijk is the rate of conversion of prot j to i in particle type k
@@ -86,6 +88,8 @@ PROTCONV 2 1 0D0 1D0
 PROTCONV 1 1 0D0 -1D0
 
 # MM constant for protein conversion
+# format: KM_i
+# where KM_i is the Michaelis-Menten constant for protein conversion rate in particle type i
 KMVALS 0D0 0.01D0
 
 ##############################################
@@ -136,10 +140,19 @@ REGPOS -1D0
 # time step
 DELT 1D-3
 # where to save output file
-OUTPUT 1 /data/SimData/particledynamics1D/outfiles/*.out
+#OUTPUT 1 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots
-SNAPSHOTS 2D3 /data/SimData/particledynamics1D/snapfiles/*.snap.out
+#SNAPSHOTS 5D2 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # save distribution of nfuse
-FUSEDIST 0 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
+#FUSEDIST 0 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
+# print status to console
+#PRINTEVERY -1
+
+# where to save output file
+OUTPUT 1 ./*.out
+# where to save snapshots
+SNAPSHOTS 1 ./*.snap.out
+# save distribution of nfuse
+FUSEDIST 0 ./*.fuse.out
 # print status to console
 PRINTEVERY -1

@@ -29,13 +29,14 @@ for rc = 1:length(runlenvals)
 		disp([pc rc])
 % 		filename = sprintf('/data/SimData/particledynamics1D/snapfiles/nfusedist_pf%s_runlen%s.snap.out',...
 % 			pstr(pc),runlenstr(rc));
-		filename = sprintf('/data/SimData/particledynamics1D/snapfiles/nfusedist_pf%s.snap.out',pstr(pc));
+% 		filename = sprintf('/data/SimData/particledynamics1D/snapfiles/nfusedist_pf%s.snap.out',pstr(pc));
+		filename = sprintf('../nfusedist_pf%s.snap.out',pstr(pc));
 		% 	filename = '/data/SimData/particledynamics1D/snapfiles/testnfuse.snap.out';
 		[grouplist,tvals,domlen,ntrials] = readsnapshot(filename,options);
 		
 % 		protfile = sprintf('/data/SimData/particledynamics1D/outfiles/nfusedist_pf%s_runlen%s.out',...
 % 			pstr(pc),runlenstr(rc));
-		protfile = sprintf('/data/SimData/particledynamics1D/outfiles/nfusedist_pf%s.out',pstr(pc));
+		protfile = sprintf('../nfusedist_pf%s.out',pstr(pc));
 		[~,cellprot{pc,rc},axprot{pc,rc},~] = readprot(protfile);
 		
 		tmplysopos = [];
@@ -100,9 +101,9 @@ T = 2*(rp+ry)/(vp+vy);
 % fusion rates
 kfvals = -log(1-pvals)/T;
 % lyso production rate
-kpy = 17.9*100;
+kpy = 1000;17.9*100;
 % phago production rate
-kpp = 1.6*100;
+kpp = 100;1.6*100;
 % encounter length
 ell = 2*(rp+ry);
 % beta
@@ -126,8 +127,8 @@ kM = 0.01;
 
 %%
 dt = 0.001; % simulation timestep
-phfrate = 5; % framerate for phagosomes (binwidth)
-lyfrate = 1.01; % framerate for lysosomes (binwidth)
+phfrate = 10; % framerate for phagosomes (binwidth)
+lyfrate = 2.1;  % framerate for lysosomes (binwidth)
 xp = 0:(phfrate*vp*dt):1; % possible positions for phagosomes
 xl = 0:(lyfrate*vy*dt):1; % possible positions for lysosomes
 %% alternative binning
@@ -142,8 +143,7 @@ rc = 1;
 ct = 1;
 for pc = plotinds
 	
-	if(length(pvals(plotinds))>1); subplot(2,3,ct); end
-	
+	if(length(pvals(plotinds))>1); subplot(1,2,ct); end	
 	nlyso = histcounts(lysopos{pc,rc},xl);
 	nphago = histcounts(phpos{pc,rc},xp);
 	
@@ -154,12 +154,14 @@ for pc = plotinds
 	xpvals = 0.5*(xp(1:end-1)+xp(2:end)); 
 % 	xpvals = xp(2:end);
 	dxp = xpvals(2)-xpvals(1);
+	
+% 	xthvals = linspace(0,1,1e4);
 
 	plot(xlvals,nlyso./ntrials./dxl,'bo','DisplayName','lyso density, sims')
 	hold on
 	plot(xlvals,rho_y(betvals(pc),xlvals),'b--','DisplayName','lyso density, an. model');
 	plot(xpvals,nphago./ntrials./dxp,'ro','DisplayName','phago density, sims')
-	plot(xpvals,rho_p(xpvals),'r--','DisplayName','phago density, an. model');
+	plot(xlvals,rho_p(xlvals),'r--','DisplayName','phago density, an. model');
 	hold off
 	plot_cleanup
 	title(sprintf('fusion probability: %0.3f',pvals(pc)))
@@ -177,13 +179,13 @@ cmap = colormapinterp([0,0,1;1,0,0],length(pvals(plotinds)));
 ct = 1;
 for pc = plotinds
 	
-	if(length(pvals)>1); subplot(2,3,ct); end
+	if(length(pvals)>1); subplot(1,2,ct); end
 	
 	[nphago,~,binind] = histcounts(phpos{pc,rc},xp);
-	acvals = afunc_sim(nfusedist{pc,rc},c0,rp,ry);
-% 	acvals = phacid{pc,rc};
+% 	acvals = afunc_sim(nfusedist{pc,rc},c0,rp,ry);
+	acvals = phacid{pc,rc};
 	
-	nfusehist = accumarray(binind,nfusedist{pc});
+% 	nfusehist = accumarray(binind,nfusedist{pc});
 	achist = accumarray(binind,acvals);
 
 	xpvals = 0.5*(xp(1:end-1)+xp(2:end)); 
@@ -191,6 +193,7 @@ for pc = plotinds
 	dxp = xpvals(2)-xpvals(1);
 
 	plot(xpvals,achist./nphago','o','Color',cmap(ct,:),'DisplayName','acidification, sims')
+% 	plot(xpvals,achist./nphago','o','Color',cmap(ct,:),'DisplayName','acidification, sims')
 % 	plot(xpvals,afunc_sim(nfusehist,c0,rp,ry),'o','Color',cmap(pc,:),...
 % 																																'DisplayName','acidification, sims')
 	hold on
@@ -199,7 +202,7 @@ for pc = plotinds
 	hold off
 	plot_cleanup
 	title(sprintf('fusion probability: %0.3f',pvals(pc)))
-	xlim([0,0.05]);
+	xlim([0,0.1]);
 % 	ylim([0,10]);
 	xlabel('distance')
 	ylabel('acidification')
