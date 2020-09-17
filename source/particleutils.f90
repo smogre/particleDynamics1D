@@ -234,9 +234,11 @@ CONTAINS
       DO PC = 1,SUM(PGROUP%NPART)
         WRITE(99,'(5I12)') PC,PLIST(PC)%ID,PLIST(PC)%PTYPE,PLIST(PC)%NPROT,&
                                                                     PLIST(PC)%NFUSE
-        WRITE (X1,'(I2)') PLIST(PC)%NPROT+2
+        WRITE (X1,'(I2)') PLIST(PC)%NPROT+2        
         FMT2 = '('//TRIM(X1)//'ES15.6E2)'
+!        PRINT*, 'TESTX1:', PC, PLIST(PC)%NPROT, fmt2
         IF(PLIST(PC)%NPROT.GT.0) THEN
+!           print*, 'TESTX2:', PLIST(PC)%POS,PLIST(PC)%PROT,PLIST(PC)%ACIDITY
           WRITE(99,FMT2) PLIST(PC)%POS,PLIST(PC)%PROT,PLIST(PC)%ACIDITY
         ELSE
           WRITE(99,FMT2) PLIST(PC)%POS

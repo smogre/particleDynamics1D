@@ -1,5 +1,5 @@
 %% test numerical ode solver
-pvals = 0.5;[1e-4,0.1,0.5,0.75];
+pvals = 0.25;[1e-4,0.1,0.5,0.75];
 %% analytical model predictions
 % domain length in microns
 L = 100;
@@ -60,7 +60,7 @@ for pc = plotinds
 	ct = ct+1;
 end
 hold off
-plot_cleanup
+%plot_cleanup
 lgd = legend;
 lgd.Interpreter = 'latex';
 xlim([0,0.1])
@@ -69,7 +69,7 @@ ylim([0,tmpy(2)])
 %%
 semilogx(pvals,G0vals)
 % semilogx(pvals,fluxvals)
-plot_cleanup
+%plot_cleanup
 
 %%
 function dy = degProtdist(x,y,k0,kM,gamvals,betvals,vp)

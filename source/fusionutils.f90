@@ -249,7 +249,8 @@ CONTAINS
   END SUBROUTINE UPDATEINTERACTION
 
   SUBROUTINE UPDATECONVRATE(PARTP,PARAMP)
-  ! update protein conversion rate for a particle
+    ! update acidity and
+    ! protein conversion rate for a particle, dependent on acidity
     USE PARTICLEUTILS,ONLY: PARTICLE,PARTICLEPARAMS
     IMPLICIT NONE
 

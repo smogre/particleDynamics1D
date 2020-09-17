@@ -7,9 +7,10 @@ pstr = {'0pt25'}%,'0pt5','0pt75'};
 tic
 cmap = [0,0,1;0,0,1];
 options = struct();
-options.readsinglesnap = 1;
+options.readlastsnap = 1;
 lysopos = cell(length(pvals),1);
 phpos = cell(length(pvals),1);
+phprots = cell(length(pvals),1);
 nfusedist = cell(length(pvals),1);
 for pc = 1%:length(pvals)
 	disp(pc)
@@ -18,17 +19,21 @@ for pc = 1%:length(pvals)
 	tmplysopos = [];
 	tmpphpos = [];
 	tmpnfuse = [];
-	for tc = 1:length(grouplist) % cycle over time points
+    tmpprot = [];
+	for tc = 1:length(grouplist) % cycle over iterations
 		pos = vertcat(grouplist(tc).particles(:).pos);
 		ptypes = vertcat(grouplist(tc).particles(:).type);
 		nfuse = vertcat(grouplist(tc).particles(:).nfuse);
+        prots = vertcat(grouplist(tc).particles(:).prot);
 		tmplysopos = cat(1,tmplysopos,pos(ptypes==1));
 		tmpphpos = cat(1,tmpphpos,pos(ptypes==2));
 		tmpnfuse = cat(1,tmpnfuse,nfuse(ptypes==2));
+        tmpprot = cat(1,tmpprot,prots(ptypes==2,:));
 	end
 	lysopos{pc} = tmplysopos;
 	phpos{pc} = tmpphpos;
 	nfusedist{pc} = tmpnfuse; % number of fusions for each phagosome in all trials
+    phprots{pc} = tmpprot; % save proteins in all phagosomes
 end
 toc
 
