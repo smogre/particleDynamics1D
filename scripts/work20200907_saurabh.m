@@ -110,15 +110,17 @@ ell = 2*(rp+ry);
 betvals = kpp*ell/vp/vy*kfvals;
 % gamma
 gamvals = kpy*ell/vp/vy*ry^3/(ry^3+rp^3)*kfvals;
-% acidicication
-afunc_th = @(c0,gam,beta,x) c0*(1-exp(gam/beta*(exp(-beta*Lhat)-exp(-beta*x))));
+% number of fusion events:
+Nfunc_th = @(beta,x) kpy/kpp*(exp(-beta*x) - exp(-beta*Lhat));
+% acidification with increasing volume
+afunc_th = @(beta,x) c0*Nfunc_th(beta,x)./(Nfunc_th(beta,x) + rp^3/ry^3);
 % density
 rho_p = @(x) kpp/vp.*ones(size(x));
 rho_y0 = kpy/vy;
 rho_y = @(beta,x) rho_y0*exp(-beta.*x);
-% acidification
+% acidification from sims
 c0 = 1;
-afunc_sim = @(n,c0,rp,rl) n*c0./(n+rp^3/rl^3);
+afunc_sim = @(n,c0,rp,rl) n*c0./(n+rp^3/ry^3);
 % afunc_sim = @(n,c0,rp,rl) n*c0.*rl^3/rp^3;
 % amount of degraded protein near cell body
 k0 = 1;
