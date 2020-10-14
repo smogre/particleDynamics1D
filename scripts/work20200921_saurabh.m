@@ -26,11 +26,13 @@ T = 2*(rp+ry)/(vp+vy);
 % fusion rates
 kfvals = -log(1-pvals)/T;
 % production rate multiplier
-prodmult = 1e3;
+prodmult = 1e0;
 % lyso production rate
 kpy = 17.9*prodmult;
+% kpy = 100;
 % phago production rate
-kpp = 1.6*prodmult;
+% kpp = 10;
+kpp = 1.6e2*prodmult;
 % encounter length
 ell = 2*(rp+ry);
 % beta
@@ -74,23 +76,22 @@ title(sprintf('$k_\\mathrm{max} = %0.4g,~K_M = %0.4g$\n$ k_{p,p} = %0.4g,~k_{p,y
 % 																															'FontSize',20,'Interpreter','latex')
 text(pvals(idx)/2,1.05*degflux(idx),sprintf('$p_\\mathrm{max} = %0.4g$',pvals(idx)),'Units','data',...
 	'FontSize',20,'Interpreter','latex')
-%%
-
-pvals = logspace(-3,0,1e3);
+%% vary production rate ratio or overall production
+nvals = 1e2;
+pvals = logspace(-3,0,nvals+1);
+% pvals = linspace(1/nvals,1,nvals+1);
 
 kdmax = 1e0;
 KM = 1e0;
 xint = linspace(0,1,5000); dx = xint(2)-xint(1);
 
 % production rate multiplier
-prodmult = logspace(0,3,1e3);
+prodmult = logspace(0,3,nvals);
 
 % ratio of prod rates kpy/kpp
-prodratio = logspace(-2,3,1e3);
+prodratio = logspace(-2,-1,nvals);
 
-degflux = zeros(length(pvals),length(prodmult));
-pmax =  zeros(length(prodmult),1);
-Jmax = pmax;
+degflux = zeros(length(pvals),nvals);
 
 % domain length in microns
 L = 100;
@@ -112,59 +113,45 @@ T = 2*(rp+ry)/(vp+vy);
 kfvals = -log(1-pvals)/T;
 % encounter length
 ell = 2*(rp+ry);
+% phago production rate
+kpp = 1;
+
 % acidification
 c0 = 1;
+% number of fusion events:
+Nfunc_th = @(beta,kpy,kpp,x) kpy/kpp*(exp(-beta*x) - exp(-beta*Lhat));
+% acidification with increasing volume
+afunc_th = @(beta,kpy,kpp,x) c0*Nfunc_th(beta,kpy,kpp,x)./(Nfunc_th(beta,kpy,kpp,x) + rp^3/ry^3);
 
-% for mc = 1:length(prodmult)
-for mc = 1:length(prodratio)
+for nc = 1:nvals
 	
-	disp(mc)
+	disp(nc)
 	% phago production rate
-% 	kpp = 1.6*prodmult(mc);
-	kpp = 10;
+% 	kpp = 1.6*prodmult(nc);
+	
 	% lyso production rate
-% 	kpy = 17.9*prodmult(mc);
-	kpy = prodratio(mc)*kpp;
+% 	kpy = 17.9*prodmult(nc);
+	kpy = prodratio(nc)*kpp;
 	
-	% beta
+	% beta;
 	betvals = kpp*ell/vp/vy*kfvals;
-	% density
-	rho_p = @(x) kpp/vp.*ones(size(x));
-	rho_y0 = kpy/vy;
-	rho_y = @(beta,x) rho_y0*exp(-beta.*x);
-	
-	% number of fusion events:
-	Nfunc_th = @(beta,x) kpy/kpp*(exp(-beta*x) - exp(-beta*Lhat));
-	% acidification with increasing volume
-	afunc_th = @(beta,x) c0*Nfunc_th(beta,x)./(Nfunc_th(beta,x) + rp^3/ry^3);
-	
 	
 	parfor pc = 1:length(pvals)
-		A = afunc_th(betvals(pc),xint);
+% 		disp(pc)
+		
+		A = afunc_th(betvals(pc),kpy,kpp,xint);
 		P = kdmax*A./(A+KM)/vp;
 		H = (cumsum(P) - 0.5*P(1)-0.5*P)*dx;
 		% this is int_0^x - int_0^1 = - int_x^1
 		Hx1 = H - H(end);
 		G = 1 - exp(Hx1);
 		
-		degflux(pc,mc) = G(1)*vp;
+		degflux(pc,nc) = G(1)*vp;
 	end
-	
-	[Jmax(mc),idx] = max(degflux(:,mc));
-	pmax(mc) = pvals(idx);
-end
-%% plot optimum pf vs production rate multiplier
-% kpp = 1.6;
-% kpy = 17.9;
 
-semilogx(prodmult,pmax)
-xlabel('production rate multiplier ($n$)')
-ylabel('$p_f$ with maximum flux')
-title(sprintf('$k_\\mathrm{max} = %0.4g,~K_M = %0.4g$\n$ k_{p,p} = %0.4gn,~k_{p,y} = %0.4gn$',...
-	kdmax,KM,kpp,kpy))
-plot_cleanup
-%% get surface plot for production rate multiplier
-pcolor(pvals,prodmult,degflux)
+end
+%% surface plot for production rate multiplier
+pcolor(pvals,prodmult,degflux')
 shading flat
 colormap jet;
 cb = colorbar;
@@ -179,20 +166,9 @@ plot_cleanup
 xlabel('fusion probability')
 ylabel('production rate multiplier ($n$)')
 title(sprintf('$k_\\mathrm{max} = %0.4g,~K_M = %0.4g$\n$ k_{p,p} = %0.4gn,~k_{p,y} = %0.4gn$',...
-	kdmax,KM,kpp,kpy))
-%% plot optimum pf vs ratio of production rates
-% kpp = 1.6;
-% kpy = 17.9;
-
-semilogx(prodratio,pmax)
-xlabel('production rate ratio ($r$)')
-ylabel('$p_f$ with maximum flux')
-xlim([min(prodratio),max(prodratio)])
-title(sprintf('$k_\\mathrm{max} = %0.4g,~K_M = %0.4g$, $ k_{p,p} = %0.4g,~k_{p,y} = rk_{p,p}$',...
-	kdmax,KM,1))
-plot_cleanup
+	kdmax,KM,1.6,17.9))
 %% get surface plot for production rate ratio
-pcolor(pvals,prodratio,degflux)
+pcolor(pvals,prodratio,degflux')
 shading flat
 colormap jet;
 cb = colorbar;
@@ -203,6 +179,7 @@ cb.Label.Rotation = 270;
 cb.Label.Units = 'normalized';
 cb.Label.Position = [6,0.5,0];
 set(gca,'XScale','log','YScale','log')
+% set(gca,'YScale','log')
 plot_cleanup
 xlabel('fusion probability')
 ylabel('production rate ratio ($r$)')

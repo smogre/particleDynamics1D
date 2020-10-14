@@ -5,10 +5,10 @@
 ACTION RUNDYNAMICS
 
 # number of steps
-NSTEPS 1D3
+NSTEPS 2D3
 
 # number of trials
-NTRIALS 1
+NTRIALS 1D2
 
 ##############################################
 # particle information
@@ -20,7 +20,7 @@ NTRIALS 1
 NTYPE 2
 
 # initial number of particles of each type
-NPART 1000 1
+NPART 0 0
 
 # starting position for particle types
 # negative values => start uniformly in domain
@@ -55,9 +55,9 @@ DIFFCONST 0D0
 #KPROD 1.79D0 0.16D0
 # rate for 100um domain
 #KPROD 17.9D0 1.6D0
-KPROD 0D0 0D0
+#KPROD 0D0 0D0
 # boosted rate
-#KPROD 1D3 1D2
+KPROD 17.9D2 1.6D2
 
 ##############################################
 # protein information
@@ -140,19 +140,10 @@ REGPOS -1D0
 # time step
 DELT 1D-3
 # where to save output file
-#OUTPUT 1 /data/SimData/particledynamics1D/outfiles/*.out
+OUTPUT 1 /data/SimData/particledynamics1D/outfiles/*.out
 # where to save snapshots
-#SNAPSHOTS 5D2 /data/SimData/particledynamics1D/snapfiles/*.snap.out
+SNAPSHOTS 2D3 /data/SimData/particledynamics1D/snapfiles/*.snap.out
 # save distribution of nfuse
 #FUSEDIST 0 /data/SimData/particledynamics1D/nfusefiles/*.fuse.out
-# print status to console
-#PRINTEVERY -1
-
-# where to save output file
-OUTPUT 1 ./*.out
-# where to save snapshots
-SNAPSHOTS 1 ./*.snap.out
-# save distribution of nfuse
-FUSEDIST 0 ./*.fuse.out
 # print status to console
 PRINTEVERY -1

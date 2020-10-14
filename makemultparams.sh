@@ -14,6 +14,5 @@ for pc in {0..4}; do
   sed -i "s/DOFUSION F/DOFUSION T/g" param.nfusedist_pf${pvalstr[$pc]};
   sed -i "s/PFUSE 1 0D0 0D0/PFUSE 1 0D0 ${pvals[$pc]}D0/g" param.nfusedist_pf${pvalstr[$pc]};
   sed -i "s/PFUSE 2 0D0 0D0/PFUSE 2 ${pvals[$pc]}D0 0D0/g" param.nfusedist_pf${pvalstr[$pc]};
-  sed -i "s/PFUSE 2 0D0 0D0/PFUSE 2 ${pvals[$pc]}D0 0D0/g" param.nfusedist_pf${pvalstr[$pc]};
   # sed -i "s/DELT 1D-3/DELT 1D-4/g" param.nfusedist_pf${pvalstr[$pc]};
 done
