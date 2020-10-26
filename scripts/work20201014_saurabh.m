@@ -25,8 +25,8 @@ kpp = 1.6e2;
 % lysosome production
 kpy = 17.9e2;
 % fusion probability
-% pvals = [0.25,0.5,0.75];
-pvals = logspace(-5,0,1e3);
+pvals = [0.25,0.5,0.75];
+% pvals = logspace(-5,0,1e3);
 % fusion rates
 kfvals = -log(1-pvals)/T;
 % beta
@@ -45,37 +45,38 @@ options.kpp = kpp;
 
 
 %%
-% clf
+clf
 cmap = colormapinterp([0,0,1;1,0,0],length(betvals));
 for bc = 1:length(betvals)
 % 	subplot(1,3,bc)
 	[~,lysodist,~,~,avals] = getProtFlux(betvals(bc),prodratio,kmax,KM,xvals,options);
 	yyaxis left
-	plot(xvals*L,lysodist,'-','Color',cmap(bc,:))
+	plot(xvals,lysodist./max(lysodist),'-','Color',cmap(bc,:))
 	plot_cleanup
 	hold on
-	ylabel('lysosome density')
+	ylabel('lysosome density relative to soma')
 	yyaxis right
-	plot(xvals*L,avals,'--','Color',cmap(bc,:))
+	plot(xvals,avals,'--','Color',cmap(bc,:))
 	plot_cleanup
 	hold on
 	ylabel('relative phagosome acidification')
-	xlabel('distance from soma ($\mu$m)')
-	xlim([0,10])
+	xlabel('distance from soma as fraction of axon length')
+	xlim([0,0.1])
 end
 hold off
-% title('lysosome production rate
+title('solid lines: density, dashed lines: acidification')
 %%
 clf
 cmap = colormapinterp([0,0,1;1,0,0],length(betvals));
 for bc = 1:length(betvals)
 	[~,lysodist,~,~,avals] = getProtFlux(betvals(bc),prodratio,kmax,KM,xvals,options);
-	plot(lysodist,avals,'Color',cmap(bc,:))
+	plot(lysodist./max(lysodist),avals,'Color',cmap(bc,:))
 	hold on
 	plot_cleanup
-	xlabel('lysosome density ($\mu$m$^{-1}$)')
+	xlabel('lysosome density relative to soma')
 	ylabel('relative phagosome acidification')
 	xlim([min(lysodist),max(lysodist)])
+	xlim([0,1])
 end
 hold off
 %%

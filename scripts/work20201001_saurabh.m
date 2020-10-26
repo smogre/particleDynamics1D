@@ -245,8 +245,8 @@ nvals = 1e2;
 rvals = logspace(1,3,nvals+1);
 % pvals = linspace(1/(nvals+1),0.99,nvals+1);
 
-kdmax = 1e-4;
-KM = 1e-2;
+kdmax = 1e0;
+KM = 1e0;
 xint = linspace(0,1,5000); dx = xint(2)-xint(1);
 
 % beta
@@ -312,7 +312,7 @@ colormap jet;
 cb = colorbar;
 cb.TickLabelInterpreter = 'latex';
 cb.Label.Interpreter = 'latex';
-% cb.Label.String = 'normalized autophagic flux $J_d/k_\mathrm{max}$';
+cb.Label.String = 'normalized autophagic flux $J_d/k_\mathrm{max}$';
 cb.Label.Rotation = 270;
 cb.Label.Units = 'normalized';
 cb.Label.Position = [6,0.5,0];
@@ -320,9 +320,9 @@ set(gca,'XScale','log','YScale','log')
 % caxis([0,0.5])
 % set(gca,'YScale','log')
 plot_cleanup
-xlabel('production rate ratio ($r\equiv k_{p,y}/k_{p,p}$)')
-ylabel('$\beta\equiv k_{p,p}k_f\ell/v_pv_y$')
-title(sprintf('$k_\\mathrm{max} = %0.4g,~K_M = %0.4g$',kdmax,KM))
+xlabel('relative lysosome abundance $r$ ($k_{p,y}/k_{p,p}$)')
+ylabel('lysosome density decay length $\beta$ ($k_{p,p}k_f\ell/v_pv_y$)')
+% title(sprintf('$k_\\mathrm{max} = %0.4g,~K_M = %0.4g$',kdmax,KM))
 %%
 KM = 0.01;
 kdmax = 1;
