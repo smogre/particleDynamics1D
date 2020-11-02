@@ -4,7 +4,7 @@ clear;clc;
 pvals = logspace(-3,0,1e3);
 
 kdmax = 1e0;
-KM = 1e0;
+KM = 1e-2;
 xint = linspace(0,1,5000); dx = xint(2)-xint(1);
 
 % domain length in microns

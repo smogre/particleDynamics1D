@@ -282,7 +282,7 @@ kfvals = betavals*vp*vy./kpp./ell;
 Nfunc_th = @(beta,kpy,x) kpy./kpp.*(exp(-beta*x) - exp(-beta*Lhat));
 % acidification with increasing volume
 afunc_th = @(beta,kpy,x) c0*Nfunc_th(beta,kpy,x)./(Nfunc_th(beta,kpy,x) + rp^3/ry^3);
-%%
+% %%
 for nc = 1:nvals
 	
 	disp(nc)
@@ -305,24 +305,26 @@ for nc = 1:nvals
 	
 end
 % %% get surface plot for r and beta
-pcolor(rvals,betavals,degflux'./kdmax)
+pcolor(rvals,betavals,degflux')%./kdmax)
 % pcolor(rvals,betavals,degflux'.*KM./kdmax)
 shading flat
 colormap jet;
 cb = colorbar;
 cb.TickLabelInterpreter = 'latex';
+cb.FontSize = 30;
 cb.Label.Interpreter = 'latex';
-cb.Label.String = 'normalized autophagic flux $J_d/k_\mathrm{max}$';
+cb.Label.String = 'flux of degraded material per autophagosome $J_d$';%/k_\mathrm{max}$';
 cb.Label.Rotation = 270;
+cb.Label.FontSize = 30;
 cb.Label.Units = 'normalized';
 cb.Label.Position = [6,0.5,0];
 set(gca,'XScale','log','YScale','log')
 % caxis([0,0.5])
 % set(gca,'YScale','log')
-plot_cleanup
+plot_cleanup('FontSize',30);
 xlabel('relative lysosome abundance $r$ ($k_{p,y}/k_{p,p}$)')
-ylabel('lysosome density decay length $\beta$ ($k_{p,p}k_f\ell/v_pv_y$)')
-% title(sprintf('$k_\\mathrm{max} = %0.4g,~K_M = %0.4g$',kdmax,KM))
+ylabel({'lysosome density decay lengthscale';'$\beta$ ($k_{p,p}k_f\ell/v_pv_y$)'})
+title(sprintf('$k_\\mathrm{max} = %0.4g,~K_M = %0.4g$',kdmax,KM))
 %%
 KM = 0.01;
 kdmax = 1;
