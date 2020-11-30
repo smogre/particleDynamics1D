@@ -1,4 +1,5 @@
 %% make plots for organelle distribution, acidity, and degraded protein flux
+% use analytical model
 clear; clc;
 %% set default values
 % domain length in microns
@@ -34,7 +35,7 @@ betvals = kpp*ell/vp/vy*kfvals;
 % production ratio
 prodratio = kpy/kpp;
 % max degradation rate
-kmax = 5;
+kmax = 1;
 % saturating acidification
 KM = 1e0;
 % x values
@@ -42,9 +43,10 @@ xvals = linspace(0,1,5e3); dx = xvals(2)-xvals(1);
 % options
 options = struct();
 options.kpp = kpp;
+options.dilute = false;
 
 
-%%
+%% plot lysosome density and acidification vs distance
 clf
 cmap = colormapinterp([0,0,1;1,0,0],length(betvals));
 for bc = 1:length(betvals)
@@ -70,7 +72,7 @@ for bc = 1:length(betvals)
 end
 hold off
 title('solid lines: density, dashed lines: acidification')
-%%
+%% plot acidification vs lysosome density
 clf
 cmap = colormapinterp([0,0,1;1,0,0],length(betvals));
 for bc = 1:length(betvals)
@@ -84,9 +86,9 @@ for bc = 1:length(betvals)
 	xlim([0,1])
 end
 hold off
-%%
-% hold off
-hold on
+%% plot optimum fusion probability
+hold off
+% hold on
 degflux = zeros(length(betvals),1);
 for bc = 1:length(betvals)
 	degflux(bc) = getProtFlux(betvals(bc),prodratio,kmax,KM,xvals,options);
@@ -101,3 +103,32 @@ ylabel('autophagic flux per phagosome')
 [jmax,idx] = max(degflux);
 text(pvals(idx)/2,1.02*degflux(idx),sprintf('$k_\\mathrm{max} = %0.4g$/s',kmax),'Units','data',...
 	'FontSize',30,'Interpreter','latex')
+%% surface plots for autophagic flux vs beta and prodratio
+betvals = logspace(-2,1,1e2);
+prodratiovals = logspace(1,3,101);
+degflux = zeros(length(betvals),length(prodratiovals));
+
+for bc = 1:length(betvals)
+	disp(bc)
+	for rc = 1:length(prodratiovals)
+		degflux(bc,rc) = getProtFlux(betvals(bc),prodratiovals(rc),kmax,KM,xvals,options);
+	end
+end
+%%
+pcolor(prodratiovals,betvals,degflux)
+shading flat
+colormap jet;
+cb = colorbar;
+cb.TickLabelInterpreter = 'latex';
+cb.Label.Interpreter = 'latex';
+% cb.Label.String = 'normalized autophagic flux $J_d/k_\mathrm{max}$';
+cb.Label.Rotation = 270;
+cb.Label.Units = 'normalized';
+cb.Label.Position = [6,0.5,0];
+set(gca,'XScale','log','YScale','log')
+% caxis([0,0.5])
+% set(gca,'YScale','log')
+plot_cleanup
+xlabel('production rate ratio ($r\equiv k_{p,y}/k_{p,p}$)')
+ylabel('$\beta\equiv k_{p,p}k_f\ell/v_pv_y$')
+title(sprintf('$k_\\mathrm{max} = %0.4g,~K_M = %0.4g$',kmax,KM))

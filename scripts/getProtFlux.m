@@ -17,6 +17,8 @@ opt.rp = 4e-3;
 opt.vy = 2.67;
 % lysosome radius
 opt.ry = 1e-3;
+% use volumetric dilution
+opt.dilute = true;
 
 
 if(exist('options','var')); opt = copyStruct(options,opt); end
@@ -40,7 +42,12 @@ lysodist = kpy/vy.*exp(-beta.*xvals);
 % number of fusion events
 nfuse = @(beta,prodratio,x) prodratio.*(exp(-beta.*x) - exp(-beta*Lhat));
 % phagosome acidification
-acidity = @(beta,prodratio,x) nfuse(beta,prodratio,x)./(nfuse(beta,prodratio,x)+rp^3/ry^3);
+if(opt.dilute)
+	acidity = @(beta,prodratio,x) nfuse(beta,prodratio,x)./(nfuse(beta,prodratio,x)+rp^3/ry^3);
+else
+	acidity = @(beta,prodratio,x) -prodratio./beta.*...
+																	(exp(-beta.*Lhat)-exp(-beta.*x)-beta.*(x-Lhat).*exp(-beta.*Lhat));
+end
 
 % number of fusions within the domain
 nfusevals = nfuse(beta,prodratio,xvals);

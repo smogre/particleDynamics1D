@@ -76,7 +76,7 @@ while(~feof(fid))
 				grouplist(tc).particles(pid).pos = [grouplist(tc).particles(pid).pos;posvals(pc)];
 				grouplist(tc).particles(pid).prot = [grouplist(tc).particles(pid).prot;protvals(pc,:)];
 				grouplist(tc).particles(pid).nfuse = nfusevals(pc);
-				grouplist(tc).particles(pid).acidity = acidityvals(pc);
+				grouplist(tc).particles(pid).acidity = [grouplist(tc).particles(pid).acidity;acidityvals(pc)];
 			end
 		end
 		

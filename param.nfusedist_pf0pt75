@@ -80,16 +80,25 @@ STARTPROT 2 1D0 0D0
 # where a_i is the initial acidification of the ith particle type
 STARTACID 1D0 0D0
 
+# acidification rate of vATPase pumps
+# assume phagosomes initially have no pumps
+# acquiring pumps from fusing with lysosomes increases the acidification rate
+# once pumps are acquired, the acidity of phagosomes increases at a constant rate
+# enter acidification rate for each particle type
+# if acidification rate is zero, then acidity increases by dilution during fusion
+ACIDIFICATIONRATE 0D0 1D0
+
 # maximal protein conversion rates k0
 # format: i j k_ijk
 # where i,j are protein types,
-# k_ijk is the rate of conversion of prot j to i in particle type k
-PROTCONV 2 1 0D0 1D0
-PROTCONV 1 1 0D0 -1D0
+# k_ijk is the maximal rate of conversion of prot j to i in particle type k
+KMAX 2 1 0D0 1D0
+KMAX 1 1 0D0 -1D0
 
-# MM constant for protein conversion
+# Michaelis-Menten constant for protein conversion
 # format: KM_i
 # where KM_i is the Michaelis-Menten constant for protein conversion rate in particle type i
+# if KM_i is zero, the protein conversion rate defaults to KMAX_i
 KMVALS 0D0 0.01D0
 
 ##############################################

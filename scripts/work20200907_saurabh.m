@@ -97,8 +97,10 @@ afunc_sim = @(n,c0,rp,rl) n*c0./(n+rp^3/ry^3);
 % afunc_sim = @(n,c0,rp,rl) n*c0.*rl^3/rp^3;
 % number of fusion events:
 Nfunc_th = @(beta,x) kpy/kpp*(exp(-beta*x) - exp(-beta*Lhat));
-% acidification with increasing volume
-afunc_th = @(beta,x) c0*Nfunc_th(beta,x)./(Nfunc_th(beta,x) + rp^3/ry^3);
+% % acidification with increasing volume
+% afunc_th = @(beta,x) c0*Nfunc_th(beta,x)./(Nfunc_th(beta,x) + rp^3/ry^3);
+% acidification with constant acidification rate
+afunc_th = @(beta,x) -kpy./kpp./beta.*(exp(-beta.*L)-exp(-beta.*x)-beta.*(x-L).*exp(-beta.*L));
 % amount of degraded protein near cell body
 k0 = 1;
 kM = 0.01;
@@ -117,12 +119,12 @@ xl = xp;
 %% plot organelle densities
 % plotinds = [7,12,17];
 % figure
-plotinds = 1:length(pvals);
+plotinds = 2:4;%1:length(pvals);
 
 ct = 1;
 for pc = plotinds
 	
-	if(length(pvals(plotinds))>1); subplot(1,2,ct); end
+	if(length(pvals(plotinds))>1); subplot(1,3,ct); end
 	nlyso = histcounts(lysopos{pc},xl);
 	nphago = histcounts(phpos{pc},xp);
 	
@@ -150,14 +152,50 @@ for pc = plotinds
 	ylabel('organelle density')
 	ct = ct+1;
 end
-%% plot acidification
+%% plot number of fusion evens
 % figure
-plotinds = 1:length(pvals);
+plotinds = 2:4;1:length(pvals);
 cmap = colormapinterp([0,0,1;1,0,0],length(pvals(plotinds)));
 ct = 1;
 for pc = plotinds
 	
-	if(length(pvals)>1); subplot(2,3,ct); end
+	if(length(pvals)>1); subplot(1,3,ct); end
+	
+	[nphago,~,binind] = histcounts(phpos{pc},xp);
+	% 	acvals = afunc_sim(nfusedist{pc,rc},c0,rp,ry);
+	nfvals = nfusedist{pc};
+	
+	% 	nfusehist = accumarray(binind,nfusedist{pc});
+	nfhist = accumarray(binind,nfvals);
+	
+	xpvals = 0.5*(xp(1:end-1)+xp(2:end));
+	% 	xpvals = xp(2:end);
+	dxp = xpvals(2)-xpvals(1);
+	
+	plot(xpvals,nfhist./nphago','o','Color',cmap(ct,:),'DisplayName','acidification, sims')
+	% 	plot(xpvals,achist./nphago','o','Color',cmap(ct,:),'DisplayName','acidification, sims')
+	% 	plot(xpvals,afunc_sim(nfusehist,c0,rp,ry),'o','Color',cmap(pc,:),...
+	% 																																'DisplayName','acidification, sims')
+	hold on
+	plot(xpvals,Nfunc_th(betvals(pc),xpvals),'^--','Color',cmap(ct,:),...
+		'DisplayName','acidification, an. model');
+	hold off
+	plot_cleanup
+	title(sprintf('pf: %0.3f',pvals(pc)))
+	xlim([0,0.1]);
+	% 	ylim([0,10]);
+	xlabel('distance')
+	ylabel('number of fusions')
+	ct = ct+1;
+end
+%% plot acidification
+% figure
+plotinds = 2:4;1:length(pvals);
+cmap = colormapinterp([0,0,1;1,0,0],length(pvals(plotinds)));
+ct = 1;
+for pc = plotinds
+	
+	if(length(pvals)>1); subplot(1,3,ct); end
 	
 	[nphago,~,binind] = histcounts(phpos{pc},xp);
 	% 	acvals = afunc_sim(nfusedist{pc,rc},c0,rp,ry);

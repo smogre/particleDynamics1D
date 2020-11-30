@@ -16,7 +16,7 @@ CONTAINS
                           WRITENTOUCH
     USE KEYS, ONLY: MAXNPROT,PRINTEVERY,SNAPFILE,SNAPEVERY,OUTFILE,OUTEVERY,DELT,&
                     NSTEPS,FUSEDISTEVERY,NFUSEFILE,CALCNTOUCH,NTOUCHFILE
-    USE FUSIONUTILS, ONLY: FUSEPARTICLES
+    USE FUSIONUTILS, ONLY: FUSEPARTICLES,UPDATEACIDIFICATION
     
     INTEGER, INTENT(IN) :: NTRIALS
     TYPE(PARTICLEGROUP), TARGET :: GROUPLIST(NTRIALS)
@@ -129,11 +129,14 @@ CONTAINS
 
           ! protein conversion
           ! ---------------------------------------
-          ! change to matrix exponentiation
+          ! TODO: change to matrix exponentiation?
           ! ---------------------------------------
           IF(PARTP%NPROT.GT.0) THEN
             PARTP%PROT = PARTP%PROT+MATMUL(PARTP%PROTCONV,PARTP%PROT)*DELT
           END IF
+
+          ! update acidification level of particle
+          CALL UPDATEACIDIFICATION(PARTP,PARAMP)
 
           PC = PC+1
         END DO

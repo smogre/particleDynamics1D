@@ -35,6 +35,11 @@ MODULE PARTICLEUTILS
     ! acidity of the particle
     DOUBLE PRECISION :: ACIDITY
 
+    ! rate of acidification increase
+    ! accounts for vATPase pumps that import H+ ions to increase acidification with time
+    ! fusion with lysosomes increases the number of available pumps
+    DOUBLE PRECISION :: ACIDIFICATIONRATE
+
     ! can the particle fuse?
     LOGICAL :: CANFUSE
 
@@ -129,14 +134,17 @@ MODULE PARTICLEUTILS
     ! initial acidity of each particle type
     DOUBLE PRECISION, POINTER :: STARTACID(:)
 
+    ! rate of acidification increase for each particle type
+    DOUBLE PRECISION, POINTER :: ACIDIFICATIONRATE(:)
+
     ! particle radius
     DOUBLE PRECISION , POINTER :: PRAD(:)
     
     ! number of proteins for each type
     INTEGER, POINTER :: NPROT(:)
 
-    ! conversion rates btwn proteins for each type
-    DOUBLE PRECISION, POINTER :: PROTCONV(:,:,:)
+    ! maximum conversion rates btwn proteins for each type
+    DOUBLE PRECISION, POINTER :: KMAX(:,:,:)
 
     ! rate of fusion and/or prob of fusion
     INTEGER, POINTER :: MAXNFUSE(:)
@@ -236,9 +244,9 @@ CONTAINS
                                                                     PLIST(PC)%NFUSE
         WRITE (X1,'(I2)') PLIST(PC)%NPROT+2        
         FMT2 = '('//TRIM(X1)//'ES15.6E2)'
-!        PRINT*, 'TESTX1:', PC, PLIST(PC)%NPROT, fmt2
+      !  PRINT*, 'TESTX1:', PC, PLIST(PC)%NPROT, fmt2
         IF(PLIST(PC)%NPROT.GT.0) THEN
-!           print*, 'TESTX2:', PLIST(PC)%POS,PLIST(PC)%PROT,PLIST(PC)%ACIDITY
+          ! print*, 'TESTX2:', PLIST(PC)%POS,PLIST(PC)%PROT,PLIST(PC)%ACIDITY
           WRITE(99,FMT2) PLIST(PC)%POS,PLIST(PC)%PROT,PLIST(PC)%ACIDITY
         ELSE
           WRITE(99,FMT2) PLIST(PC)%POS
@@ -251,15 +259,15 @@ CONTAINS
   END SUBROUTINE OUTPUTSNAPSHOT
 
   SUBROUTINE OUTPUTPROT(CURTIME,CELLPROT,AXPROT,FILENAME,NPROT,NTRIALS,APPEND)
-    ! Output protein content in the cell
-    ! ------------------
-    ! input parameters:
-    ! GROUPLIST: object describing multiple particle groups
-    ! FILENAME: output file
-    ! INFO: additional informational float (eg: time)
-    ! APPEND: append to file or rewrite?
-    ! -------------
-    ! output format:
+  ! Output protein content in the cell
+  ! ------------------
+  ! input parameters:
+  ! GROUPLIST: object describing multiple particle groups
+  ! FILENAME: output file
+  ! INFO: additional informational float (eg: time)
+  ! APPEND: append to file or rewrite?
+  ! -------------
+  ! output format:
 
     IMPLICIT NONE
 
@@ -290,10 +298,10 @@ CONTAINS
 
   SUBROUTINE OUTPUTNFUSEDIST(CURTIME,NFUSEDIST,NPARTDIST,NREG,NTYPE,NTRIALS,&
                                 REGPOS,DOMLEN,FILENAME,APPEND)
-    ! Output the spatial distribution of number of fusions
-    ! ------------------
-    ! -------------
-    ! output format:
+  ! Output the spatial distribution of number of fusions
+  ! ------------------
+  ! -------------
+  ! output format:
 
     IMPLICIT NONE
 
@@ -400,12 +408,16 @@ CONTAINS
       IF(PARAMP%KM(PARTP%PTYPE).GT.0D0) THEN
         PARTP%PROTCONV = 0D0
       ELSE
-        PARTP%PROTCONV = PARAMP%PROTCONV(:,:,PTYPE)
+        PARTP%PROTCONV = PARAMP%KMAX(:,:,PTYPE)
       END IF
     END IF
 
     ! allocate initial acidification
     PARTP%ACIDITY = PARAMP%STARTACID(PTYPE)
+
+    ! allocate acidification rate
+    PARTP%ACIDIFICATIONRATE = 0D0
+    ! PARTP%ACIDIFICATIONRATE = PARAMP%ACIDIFICATIONRATE(PTYPE)
     
     ! initial region in which particle is located
     IF(PRESENT(CURREG)) THEN
@@ -488,6 +500,7 @@ CONTAINS
       IF(SIZE(PARTP%PROT).GT.1) DEALLOCATE(PARTP%PROT)
     END IF
     PARTP%ACIDITY = 0D0
+    PARTP%ACIDIFICATIONRATE = 0D0
 
     PARTP%CURREG = 0
     
@@ -585,8 +598,8 @@ CONTAINS
   SUBROUTINE SETUPPARTICLEPARAMS(PARAMP)
   ! set up and initiate object to track particle parameters
     USE KEYS, ONLY : NTYPE,VEL,DIFFCONST,KPROD,KREV,STARTPOS,STARTSTATE,&
-         & PRAD,NPROT,KFUSE,PFUSE,USEPFUSE,PROTCONV,MAXNPROT,STARTPROT,MAXNPART,&
-         MAXNFUSE,KMVALS,STARTACID
+         & PRAD,NPROT,KFUSE,PFUSE,USEPFUSE,KMAX,MAXNPROT,STARTPROT,MAXNPART,&
+         MAXNFUSE,KMVALS,STARTACID,ACIDIFICATIONRATE
 
     
     IMPLICIT NONE
@@ -596,11 +609,11 @@ CONTAINS
     ALLOCATE(PARAMP%VEL(NTYPE),PARAMP%D(NTYPE),PARAMP%KPROD(NTYPE),&
          & PARAMP%KREV(NTYPE), PARAMP%STARTPOS(NTYPE), PARAMP%STARTSTATE(NTYPE),&
          & PARAMP%PRAD(NTYPE), PARAMP%NPROT(NTYPE))
-    ALLOCATE(PARAMP%PROTCONV(MAXNPROT,MAXNPROT,NTYPE),PARAMP%KM(NTYPE))
+    ALLOCATE(PARAMP%KMAX(MAXNPROT,MAXNPROT,NTYPE),PARAMP%KM(NTYPE))
     ALLOCATE(PARAMP%KFUSE(NTYPE,NTYPE),PARAMP%PFUSE(NTYPE,NTYPE),&
               PARAMP%MAXNFUSE(NTYPE))
     ALLOCATE(PARAMP%STARTPROT(NTYPE,MAXNPROT))
-    ALLOCATE(PARAMP%STARTACID(NTYPE))
+    ALLOCATE(PARAMP%STARTACID(NTYPE),PARAMP%ACIDIFICATIONRATE(NTYPE))
 
     PARAMP%MAXNPART = MAXNPART
     PARAMP%VEL = VEL(1:NTYPE)
@@ -612,9 +625,10 @@ CONTAINS
     PARAMP%PRAD = PRAD(1:NTYPE)
     PARAMP%NPROT = NPROT(1:NTYPE)
 
-    PARAMP%PROTCONV = PROTCONV(:,:,1:NTYPE)
+    PARAMP%KMAX = KMAX(:,:,1:NTYPE)
     PARAMP%KM = KMVALS(1:NTYPE)
     PARAMP%STARTACID = STARTACID(1:NTYPE)
+    PARAMP%ACIDIFICATIONRATE = ACIDIFICATIONRATE(1:NTYPE)
     
     PARAMP%USEPFUSE = USEPFUSE
     PARAMP%KFUSE = KFUSE(1:NTYPE,1:NTYPE)
@@ -631,10 +645,11 @@ CONTAINS
     IMPLICIT NONE
     TYPE(PARTICLEPARAMS), POINTER :: PARAMP
 
-    DEALLOCATE(PARAMP%VEL, PARAMP%D, PARAMP%KPROD, PARAMP%KREV, &
-         & PARAMP%STARTPOS, PARAMP%STARTSTATE, PARAMP%PRAD, PARAMP%NPROT, &
-         & PARAMP%PROTCONV, PARAMP%KFUSE, PARAMP%PFUSE, PARAMP%STARTPROT)
-
+    DEALLOCATE(PARAMP%ACIDIFICATIONRATE,PARAMP%D,PARAMP%KFUSE,PARAMP%KM,PARAMP%KMAX,&
+              & PARAMP%KPROD,PARAMP%KREV,PARAMP%NPROT,PARAMP%PFUSE,PARAMP%PRAD,&
+              & PARAMP%STARTACID,PARAMP%STARTPOS,PARAMP%STARTPROT,PARAMP%STARTSTATE,&
+              & PARAMP%VEL)
+         
     PARAMP%ARRAYSET = .FALSE.
     
   END SUBROUTINE CLEANUPPARTICLEPARAMS

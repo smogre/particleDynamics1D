@@ -246,7 +246,7 @@ rvals = logspace(1,3,nvals+1);
 % pvals = linspace(1/(nvals+1),0.99,nvals+1);
 
 kdmax = 1e0;
-KM = 1e0;
+KM = 1e-1;
 xint = linspace(0,1,5000); dx = xint(2)-xint(1);
 
 % beta

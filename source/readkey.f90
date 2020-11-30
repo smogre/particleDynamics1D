@@ -55,9 +55,10 @@ SUBROUTINE READKEY
 
   ! protein dynamics
   NPROT = 1
-  PROTCONV = 0D0
+  KMAX = 0D0
   KMVALS = 0D0
   STARTACID = 0D0
+  ACIDIFICATIONRATE = 0D0
 
   ! fusion details
   KFUSE = 0D0 ! matrix of fusion rates
@@ -148,6 +149,12 @@ SUBROUTINE READKEY
       SELECT CASE(WORD) ! pick which keyword
         CASE('ACTION')
           CALL READA(ACTION, CASESET=1)
+        CASE('ACIDIFICATIONRATE')
+          CALL READF(ACIDIFICATIONRATE(1))
+          ACIDIFICATIONRATE = ACIDIFICATIONRATE(1)
+          DO I = 2,MIN(MAXNTYPE,NITEMS-1)
+            CALL READF(ACIDIFICATIONRATE(I))
+          END DO
         CASE('BUFLEN')
           CALL READF(BUFLEN)
         CASE('DIFFCONST')
@@ -245,11 +252,11 @@ SUBROUTINE READKEY
         CASE('PRINTEVERY')
           CALL READI(PRINTEVERY)
           IF(PRINTEVERY.LT.0) PRINTEVERY = NSTEPS/10
-        CASE('PROTCONV')
+        CASE('KMAX')
           CALL READI(I)
           CALL READI(J)
           DO K = 1,MIN(MAXNTYPE,NITEMS-3)
-            CALL READF(PROTCONV(I,J,K))
+            CALL READF(KMAX(I,J,K))
           END DO
         CASE('REGPOS')
           CALL READF(REGPOS(1))
@@ -272,7 +279,6 @@ SUBROUTINE READKEY
           DO I = 2,MIN(MAXNTYPE,NITEMS-1)
             CALL READF(STARTACID(I))
           END DO
-
         CASE('STARTPOS')
           CALL READF(STARTPOS(1))
           STARTPOS = STARTPOS(1)
