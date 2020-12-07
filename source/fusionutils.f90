@@ -271,7 +271,10 @@ CONTAINS
 
     IF(PARAMP%ACIDIFICATIONRATE(PARTP%PTYPE).GT.0D0) THEN
       ! fusion increases the number of pumps, thus increasing acidification rate
-      PARTP%ACIDIFICATIONRATE  = PARTP%NFUSE*PARAMP%ACIDIFICATIONRATE(PARTP%PTYPE)
+      ! acidification rate for each pump is proportional to the difference between
+      ! the current acidification and the maximal lysosome acidification
+      PARTP%ACIDIFICATIONRATE  = PARTP%NFUSE*PARAMP%ACIDIFICATIONRATE(PARTP%PTYPE)*&
+                                & (PARAMP%STARTACID(1)-PARTP%ACIDITY)
       ! PARTP%ACIDIFICATIONRATE  = PARAMP%ACIDIFICATIONRATE(PARTP%PTYPE)
     ELSE
       ! volumetric dilution of acidity upon fusion

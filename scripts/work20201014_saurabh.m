@@ -12,6 +12,7 @@ tau = L/0.75;
 vp = 1;	% 0.75 um/s
 % lyso velocity
 vy = 2.67;	% 2um/s
+% vy = 0.4*2.67;	% 2um/s
 % phago radius
 rp = 0.4/L; % 400nm
 % lyso radius
@@ -26,8 +27,7 @@ kpp = 1.6e0;
 % lysosome production
 kpy = 17.9e0;
 % fusion probability
-% pvals = [0.25,0.5,0.75];
-pvals = logspace(-2,0,1e3);
+pvals = [0.25,0.5,0.75];
 % fusion rates
 kfvals = -log(1-pvals)/T;
 % beta
@@ -44,10 +44,12 @@ xvals = linspace(0,1,5e3); dx = xvals(2)-xvals(1);
 options = struct();
 options.kpp = kpp;
 options.dilute = false;
-
+options.kmax_a = 1;
+options.KM_a = 10;
 
 %% plot lysosome density and acidification vs distance
 clf
+
 cmap = colormapinterp([0,0,1;1,0,0],length(betvals));
 for bc = 1:length(betvals)
 % 	subplot(1,3,bc)
@@ -77,7 +79,7 @@ clf
 cmap = colormapinterp([0,0,1;1,0,0],length(betvals));
 for bc = 1:length(betvals)
 	[~,lysodist,~,~,avals] = getProtFlux(betvals(bc),prodratio,kmax,KM,xvals,options);
-	plot(lysodist./max(lysodist),avals,'Color',cmap(bc,:))
+	plot(lysodist./max(lysodist),avals,'Color',cmap(bc,:),'DisplayName',sprintf('pf: %g',pvals(bc)))
 	hold on
 	plot_cleanup
 	xlabel('lysosome density relative to soma')
@@ -85,8 +87,16 @@ for bc = 1:length(betvals)
 	xlim([min(lysodist),max(lysodist)])
 	xlim([0,1])
 end
+lgd = legend;
+lgd.Interpreter = 'latex';
+lgd.Location = 'northwest';
 hold off
 %% plot optimum fusion probability
+pvals = logspace(-2,0,1e3);
+% fusion rates
+kfvals = -log(1-pvals)/T;
+% beta
+betvals = kpp*ell/vp/vy*kfvals;
 hold off
 % hold on
 degflux = zeros(length(betvals),1);
@@ -107,14 +117,17 @@ text(pvals(idx)/2,1.02*degflux(idx),sprintf('$k_\\mathrm{max} = %0.4g$/s',kmax),
 betvals = logspace(-2,1,1e2);
 prodratiovals = logspace(1,3,101);
 degflux = zeros(length(betvals),length(prodratiovals));
-
+% max degradation rate
+kmax = 1e1;
+% saturating acidification
+KM = 1e0;
 for bc = 1:length(betvals)
 	disp(bc)
 	for rc = 1:length(prodratiovals)
 		degflux(bc,rc) = getProtFlux(betvals(bc),prodratiovals(rc),kmax,KM,xvals,options);
 	end
 end
-%%
+% %%
 pcolor(prodratiovals,betvals,degflux)
 shading flat
 colormap jet;

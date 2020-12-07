@@ -100,7 +100,10 @@ Nfunc_th = @(beta,x) kpy/kpp*(exp(-beta*x) - exp(-beta*Lhat));
 % % acidification with increasing volume
 % afunc_th = @(beta,x) c0*Nfunc_th(beta,x)./(Nfunc_th(beta,x) + rp^3/ry^3);
 % acidification with constant acidification rate
-afunc_th = @(beta,x) -kpy./kpp./beta.*(exp(-beta.*L)-exp(-beta.*x)-beta.*(x-L).*exp(-beta.*L));
+% afunc_th = @(beta,x) -kpy./kpp./beta.*(exp(-beta.*L)-exp(-beta.*x)-beta.*(x-L).*exp(-beta.*L));
+% acidification with pump dependent acidification rate
+afunc_th = @(beta,x) 1-exp(kpy./kpp./beta.*(exp(-beta.*L)-exp(-beta.*x)-...
+																										beta.*(x-L).*exp(-beta.*L)));
 % amount of degraded protein near cell body
 k0 = 1;
 kM = 0.01;
