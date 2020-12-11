@@ -17,8 +17,11 @@ opt.rp = 4e-3;
 opt.vy = 2.67;
 % lysosome radius
 opt.ry = 1e-3;
-% use volumetric dilution
+% use volumetric dilution to update acidification?
+% if this option is chosen false, the acidification only changes due to
+% vATPase pump activity
 opt.dilute = true;
+
 % michaelis-menten rates for vATPase pump activity
 opt.kmax_a = 1;
 opt.KM_a = 1;
@@ -51,14 +54,11 @@ nfusevals = nfuse(beta,prodratio,xvals);
 
 % phagosome acidification
 if(opt.dilute)
+	% acidification changes due to dilution
 	acidity = @(beta,prodratio,x) nfuse(beta,prodratio,x)./(nfuse(beta,prodratio,x)+rp^3/ry^3);
 	avals = acidity(beta,prodratio,xvals);
 else
-% 	acidity = @(beta,prodratio,x) -prodratio./beta.*...
-% 																	(exp(-beta.*Lhat)-exp(-beta.*x)-beta.*(x-Lhat).*exp(-beta.*Lhat));
-% 	acidity = @(beta,prodratio,x) 1-exp(prodratio./beta.*(exp(-beta.*Lhat)-exp(-beta.*x)-...
-% 																										beta.*(x-Lhat).*exp(-beta.*Lhat)));
-
+	% acidification changes due to vATPase activity
 	% acidification rate decreases as acidity of the organelle increases
 	% ka(N,a) = kmax_a*N/(N+KM_a)*(A0-A)
 	% ka: acidification rate
@@ -72,7 +72,7 @@ else
 	% integral of N/(N+KM_a) 
 	nintvals = nfusevals./(nfusevals+KM_a);
 	nintx = (cumsum(nintvals)-0.5*(nintvals(1)+nintvals))*dx; %integral from 0 to x
-	nint1x = nintx-nintx(end);
+	nint1x = nintx-nintx(end); % integral from L to x
 	
 	avals = A0*(1-exp(kmax_a./vp.*nint1x));
 end
