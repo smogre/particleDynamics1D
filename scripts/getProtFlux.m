@@ -1,4 +1,4 @@
-function [degflux,lysodist,phdist,nfusevals,avals,alldegflux] = ...
+function [degflux,lysodist,phdist,nfusevals,avals,alldegflux,opt] = ...
 																									getProtFlux(beta,prodratio,kmax,KM,xvals,options)
 % returns the degraded protein flux for a given parameter set
 % assume that the phagosome starts at xvals(end) with zero acidification
@@ -16,7 +16,7 @@ opt.rp = 4e-3;
 % lysosome velocity
 opt.vy = 2.67;
 % lysosome radius
-opt.ry = 1e-3;
+opt.ry = 2e-3;
 % use volumetric dilution to update acidification?
 % if this option is chosen false, the acidification only changes due to
 % vATPase pump activity
